@@ -3,7 +3,7 @@
 .vscode
 **/__pycache__/
 
-# pytorch and YOLO
+# PyTorch and YOLO
 IMDA/datasets/
 IMDA/captured*
 IMDA/roboflow*
@@ -13,3 +13,12 @@ IMDA/runs
 # C++
 *.vs
 *out/
+*x64/
+*Debug
+
+*vcxproj*
+*.sln
+*.ilk
+*log
+*exe*
+*pdb*
