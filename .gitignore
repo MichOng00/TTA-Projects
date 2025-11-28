@@ -9,6 +9,7 @@ IMDA/captured*
 IMDA/roboflow*
 IMDA/runs
 *-ubyte*
+*.npy
 
 # C++
 *.vs
@@ -21,4 +22,5 @@ IMDA/runs
 *.ilk
 *log
 *exe*
+
 *pdb*
