@@ -1,0 +1,192 @@
+from ugot import ugot
+got = ugot.UGOT()
+got.initialize('192.168.1.130')
+
+# version 2 - move while holding button / key down, stop when release
+# engineer vehicle edition - with arm AND joint control
+
+import pygame
+import sys
+
+pygame.init()
+
+WIDTH, HEIGHT = 800, 400
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Robot Control")
+
+WHITE = (255, 255, 255)
+GRAY = (200, 200, 200)
+BLACK = (0, 0, 0)
+
+BUTTON_SIZE = 80
+BUTTON_GAP = 50
+UP_POS = (WIDTH // 2 - BUTTON_SIZE // 2 - 200, HEIGHT // 2 - BUTTON_SIZE - BUTTON_GAP)
+DOWN_POS = (WIDTH // 2 - BUTTON_SIZE // 2 - 200, HEIGHT // 2 + BUTTON_GAP)
+LEFT_POS = (WIDTH // 2 - BUTTON_SIZE - BUTTON_GAP - 200, HEIGHT // 2 - BUTTON_GAP)
+RIGHT_POS = (WIDTH // 2 + BUTTON_GAP - 200, HEIGHT // 2 - BUTTON_GAP)
+OPEN_POS = (WIDTH // 2 - BUTTON_SIZE - BUTTON_GAP + 200, HEIGHT // 2 - BUTTON_SIZE)
+CLOSE_POS = (WIDTH // 2 - BUTTON_SIZE - BUTTON_GAP + 200, HEIGHT // 2 + BUTTON_SIZE)
+
+#############################
+
+# Add button positions for joint control
+JOINT_BUTTON_SIZE = 60
+base_x = WIDTH // 2 + 200
+joint_y_start = HEIGHT // 2 - 100
+JOINT_GAP = 30
+
+joint1_up_pos = (base_x, joint_y_start)
+joint1_down_pos = (base_x + JOINT_BUTTON_SIZE + 10, joint_y_start)
+
+joint2_up_pos = (base_x, joint_y_start + JOINT_BUTTON_SIZE + JOINT_GAP)
+joint2_down_pos = (base_x + JOINT_BUTTON_SIZE + 10, joint_y_start + JOINT_BUTTON_SIZE + JOINT_GAP)
+
+joint3_up_pos = (base_x, joint_y_start + 2 * (JOINT_BUTTON_SIZE + JOINT_GAP))
+joint3_down_pos = (base_x + JOINT_BUTTON_SIZE + 10, joint_y_start + 2 * (JOINT_BUTTON_SIZE + JOINT_GAP))
+
+joint1_angle = 0
+joint2_angle = 0
+joint3_angle = 0
+DURATION = 100  # Duration for each movement
+
+got.mechanical_joint_control(joint1_angle, joint2_angle, joint3_angle, DURATION) # reset arm - optional
+
+def angle(value, min_val, max_val):
+    return max(min_val, min(value, max_val))
+
+def update_joint_angles(j1, j2, j3):
+    pass
+
+# Define increase/decrease functions for each joint
+def joint1_inc():
+    update_joint_angles(joint1_angle + 1, joint2_angle, joint3_angle)
+
+def joint1_dec():
+    update_joint_angles(joint1_angle - 1, joint2_angle, joint3_angle)
+
+def joint2_inc():
+    update_joint_angles(joint1_angle, joint2_angle + 1, joint3_angle)
+
+def joint2_dec():
+    update_joint_angles(joint1_angle, joint2_angle - 1, joint3_angle)
+
+def joint3_inc():
+    update_joint_angles(joint1_angle, joint2_angle, joint3_angle + 1)
+
+def joint3_dec():
+    update_joint_angles(joint1_angle, joint2_angle, joint3_angle - 1)
+
+##########################################################
+
+def forward():
+    print("Moving forward", end="\r")
+    got.mecanum_translate_speed(angle=0, speed=30)
+    # got.transform_move_speed(direction=0,speed=30)
+
+def backward():
+    print("Moving backward", end="\r")
+    got.mecanum_translate_speed(angle=180, speed=30)
+    # got.transform_move_speed(direction=1,speed=30)
+
+def left():
+    print("Turning left", end="\r")
+    got.mecanum_turn_speed(turn=2, speed=30)
+    # got.transform_turn_speed(turn=2, speed=30)
+
+def right():
+    print("Turning right", end="\r")
+    got.mecanum_turn_speed(turn=3, speed=30)
+    # got.transform_turn_speed(turn=3, speed=30)
+
+def open_gripper():
+    print("Opening gripper", end = "\r")
+    got.mechanical_clamp_release()
+
+def close_gripper():
+    print("Closing gripper", end = "\r")
+    got.mechanical_clamp_close()
+
+def draw_button(pos, text):
+    rect = pygame.Rect(pos[0], pos[1], BUTTON_SIZE, BUTTON_SIZE)
+    pygame.draw.rect(screen, GRAY, rect, border_radius=5)
+    font = pygame.font.SysFont('Arial', 40)
+    text_surf = font.render(text, True, BLACK)
+    text_rect = text_surf.get_rect(center=rect.center)
+    screen.blit(text_surf, text_rect)
+    return rect
+
+running = True
+# add flags
+moving_forward = False
+moving_backward = False
+turning_left = False
+turning_right = False
+
+##########################
+# Joint movement flags
+moving_joint1_up = False
+moving_joint1_down = False
+moving_joint2_up = False
+moving_joint2_down = False
+moving_joint3_up = False
+moving_joint3_down = False
+###########################
+
+while running:
+    screen.fill(WHITE)
+
+    up_rect = draw_button(UP_POS, '↑')
+    down_rect = draw_button(DOWN_POS, '↓')
+    left_rect = draw_button(LEFT_POS, '←')
+    right_rect = draw_button(RIGHT_POS, '→')
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+        # instead of moving once, set flags while holding button down
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if up_rect.collidepoint(event.pos):
+                # forward()
+                moving_forward = True
+            elif down_rect.collidepoint(event.pos):
+                # backward()
+                moving_backward = True
+            elif left_rect.collidepoint(event.pos):
+                # left()
+                turning_left = True
+            elif right_rect.collidepoint(event.pos):
+                # right()
+                turning_right = True
+
+        
+        # stop moving when release button
+        if event.type == pygame.MOUSEBUTTONUP:
+            moving_forward = False
+            moving_backward = False
+            turning_left = False
+            turning_right = False
+
+
+
+        
+
+
+    # Perform actions based on movement flags
+    if moving_forward:
+        forward()
+    elif moving_backward:
+        backward()
+    elif turning_left:
+        left()
+    elif turning_right:
+        right()
+    else: # very important, otherwise will never stop
+        got.mecanum_stop()
+
+
+    
+    pygame.display.flip()
+
+pygame.quit()
+sys.exit()

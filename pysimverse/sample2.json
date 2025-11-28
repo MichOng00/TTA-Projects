@@ -1,0 +1,74 @@
+{
+  "scene": {
+    "name": "Resource-based Sample Scene",
+    "meta": {
+      "author": "auto-generated",
+      "version": "1.0",
+      "load_on_start": false
+    },
+    "assets_base": "Drone_Data/Resources",
+    "resource_files": [
+      "unity default resources",
+      "unity_builtin_extras"
+    ],
+    "environment": {
+      "gravity": 9.81,
+      "ambient_light": 0.8,
+      "sky": {
+        "type": "procedural",
+        "color": [0.52, 0.80, 0.92]
+      },
+      "terrain": {
+        "type": "flat",
+        "size": [120, 120],
+        "material": "builtin_grass"
+      }
+    },
+    "objects": [
+      {
+        "id": "ground_plane",
+        "type": "primitive_plane",
+        "position": [0, 0, 0],
+        "rotation": [0, 0, 0],
+        "scale": [120, 1, 120],
+        "static": true
+      },
+      {
+        "id": "box_obstacle_1",
+        "type": "primitive_cube",
+        "position": [6, 0.5, 4],
+        "rotation": [0, 30, 0],
+        "scale": [1, 1, 1],
+        "static": true
+      },
+      {
+        "id": "ring_target_1",
+        "type": "primitive_torus",
+        "position": [18, 1.0, -6],
+        "rotation": [90, 0, 0],
+        "scale": [1.5, 1.5, 1.5],
+        "metadata": { "type": "checkpoint", "score": 25 }
+      }
+    ],
+    "drones": [
+      {
+        "id": "drone_01",
+        "type": "primitive_drone",
+        "prefab": null,
+        "position": [0, 1.2, 0],
+        "rotation": [0, 0, 0],
+        "battery": { "capacity": 100, "start_percent": 100 },
+        "camera": { "fov": 75, "resolution": [640, 480], "mount": "front" },
+        "controls": { "ai_enabled": false, "max_speed": 6.0 }
+      }
+    ],
+    "spawn_points": [
+      { "id": "spawn_main", "position": [0, 1.2, 0], "facing": [0, 0, 1] }
+    ],
+    "simulation": {
+      "time_scale": 1.0,
+      "max_time_seconds": 900,
+      "wind": { "enabled": false, "direction": [1, 0, 0], "strength": 0.0 }
+    }
+  }
+}

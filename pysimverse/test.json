@@ -1,0 +1,57 @@
+{
+  "scene": {
+    "name": "Example Scene",
+    "environment": {
+      "lighting": {
+        "ambient_light": 0.7,
+        "directional_light": {
+          "color": [1.0, 1.0, 1.0],
+          "intensity": 1.0,
+          "direction": [0, -1, 1]
+        }
+      },
+      "gravity": 9.81,
+      "terrain": {
+        "type": "flat",
+        "size": [100, 100],
+        "height_map": "Assets/Heightmaps/flat.png"
+      }
+    },
+    "objects": [
+      {
+        "prefab": "Assets/Models/obstacleCube.prefab",
+        "position": [10, 0, 5],
+        "scale": [1, 1, 1],
+        "rotation": [0, 0, 0]
+      },
+      {
+        "prefab": "Assets/Models/obstacleSphere.prefab",
+        "position": [20, 0, 3],
+        "scale": [2, 2, 2],
+        "rotation": [0, 0, 0]
+      }
+    ],
+    "targets": [
+      {
+        "id": 1,
+        "prefab": "Assets/Models/landingPad.prefab",
+        "position": [50, 0, 0],
+        "scale": [5, 1, 5],
+        "rotation": [0, 90, 0]
+      }
+    ],
+    "drones": [
+      {
+        "id": "drone1",
+        "prefab": "Assets/Prefabs/Drone.prefab",
+        "position": [0, 0, 3],
+        "rotation": [0, 0, 0],
+        "initial_speed": 5.0,
+        "camera": {
+          "fov": 90,
+          "resolution": [1920, 1080]
+        }
+      }
+    ]
+  }
+}

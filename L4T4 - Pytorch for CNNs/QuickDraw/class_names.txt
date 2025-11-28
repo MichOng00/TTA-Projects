@@ -1,0 +1,17 @@
+airplane
+alarm_clock
+ambulance
+angel
+ant
+anvil
+apple
+arm
+cat
+hedgehog
+ice_cream
+lighthouse
+pizza
+smiley_face
+sun
+The_Eiffel_Tower
+toothbrush

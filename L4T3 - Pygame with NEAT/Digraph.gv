@@ -1,0 +1,14 @@
+digraph {
+	node [fontsize=9 height=0.2 shape=circle width=0.2]
+	right [fillcolor=lightgray shape=box style=filled]
+	"right diag" [fillcolor=lightgray shape=box style=filled]
+	forward [fillcolor=lightgray shape=box style=filled]
+	"left diag" [fillcolor=lightgray shape=box style=filled]
+	left [fillcolor=lightgray shape=box style=filled]
+	"turn right" [fillcolor=lightblue style=filled]
+	"turn left" [fillcolor=lightblue style=filled]
+	"left diag" -> "turn left" [label=1.82 color=green penwidth=0.463732405649518 style=solid]
+	"left diag" -> "turn right" [label=-1.09 color=red penwidth=0.3180277310508062 style=dotted]
+	"right diag" -> "turn right" [label=0.71 color=green penwidth=0.24254392971251917 style=solid]
+	right -> "turn left" [label=-1.46 color=red penwidth=0.3916425830535668 style=solid]
+}
