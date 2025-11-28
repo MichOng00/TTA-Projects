@@ -1,0 +1,15 @@
+.DS_Store
+.ipynb_checkpoints
+.vscode
+**/__pycache__/
+
+# pytorch and YOLO
+IMDA/datasets/
+IMDA/captured*
+IMDA/roboflow*
+IMDA/runs
+*-ubyte*
+
+# C++
+*.vs
+*out/
