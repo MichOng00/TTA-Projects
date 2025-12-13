@@ -1,22 +1,17 @@
 import cv2
 import mediapipe as mp
 import numpy as np
-from djitellopy import tello
+from ugot import ugot
 
-tel = tello.Tello()
-tel.connect()
-
-print(f"Battery: {tel.get_battery()}")
-
-tel.streamon()
-
-frame_read = tel.get_frame_read()
+got = ugot.UGOT()
+got.initialize("192.168.1.217")
+got.open_camera()
 
 # Initialize MediaPipe Face Detection
 mp_draw = mp.solutions.drawing_utils
 
 # Mediapipe Face Mesh landmark indices we need
-# (https://web.archive.org/web/20230324031132/https://google.github.io/mediapipe/solutions/face_mesh.html)
+# EYEBROW_LANDMARKS = [70, 63, 105, 66, 107, 336, 296, 334, 293, 300]
 IDX = {
     ### Eyes
     # Left eye (subject's left)
@@ -103,16 +98,20 @@ face_mesh = mp_fm.FaceMesh(
 
 with face_mesh as fm:
     while True:
-        frame = frame_read.frame
+        frame = got.read_camera_data()
+        if not frame:
+            break
+        nparr = np.frombuffer(frame, np.uint8)
+        frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
         frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        h, w = frame.shape[:2]
+        h, w = frame.shape[:2]  # <-- Added
         res = fm.process(frame_rgb)
             
         if res.multi_face_landmarks:
             for face_landmarks in res.multi_face_landmarks:
-                # Draw all landmarks 
+                # Draw all landmarks (existing)
                 mp_draw.draw_landmarks(
-                    frame_rgb,
+                    frame,
                     face_landmarks,
                     mp_fm.FACEMESH_TESSELATION,
                     landmark_drawing_spec=mp_draw.DrawingSpec(color=(0, 255, 0), thickness=1, circle_radius=1),
@@ -132,37 +131,34 @@ with face_mesh as fm:
                 # -------------------- Added: Smile detection --------------------
                 width_norm, height_norm, corner_lift = smile_metrics(face_landmarks, w, h)
                 # Heuristic: smiling if mouth is relatively wide and corners are lifted a bit
-                SMILE_WIDTH_THR = 0.6
-                CORNER_LIFT_THR = -0.04
+                SMILE_WIDTH_THR = 0.70
+                CORNER_LIFT_THR = 0.005
                 smiling = (width_norm > SMILE_WIDTH_THR) and (corner_lift > CORNER_LIFT_THR)
-                
-                # # CHALLENGE: Frown detection (or other expression)
-                # BROW_THR = 0.335
-                # eyebrow_distance = eyebrow_metrics(face_landmarks, w, h)
-                # frowning = (eyebrow_distance < BROW_THR)
-                # # frowning = (width_norm < SMILE_WIDTH_THR) and (corner_lift < -0.07)
+
+                # CHALLENGE: Frown detection (or other expression)
+                BROW_THR = 0.335
+                eyebrow_distance = eyebrow_metrics(face_landmarks, w, h)
+                frowning = (eyebrow_distance < BROW_THR)
 
                 # -------------------- Added: On-screen HUD --------------------
                 eye_text = f"Eyes: {'Open' if (left_open and right_open) else 'Closed' if (not left_open and not right_open) else 'One closed'}"
                 smile_text = f"Smile: {'Yes' if smiling else 'No'}"
-                # frown_text = f"Frown: {'Yes' if frowning else 'No'}"
-                debug_text = f"(LE:{le_ratio:.2f} RE:{re_ratio:.2f})  width:{width_norm:.2f} lift:{corner_lift:.3f}"
+                frown_text = f"Frown: {'Yes' if frowning else 'No'}"
+                debug_text = f"(LE:{le_ratio:.2f} RE:{re_ratio:.2f}) width:{width_norm:.2f} lift:{corner_lift:.3f} brows:{eyebrow_distance:.3f}"
 
-                cv2.putText(frame_rgb, eye_text, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0,255,0) if (left_open and right_open) else (0,165,255), 2, cv2.LINE_AA)
-                cv2.putText(frame_rgb, smile_text, (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0,255,0) if smiling else (0,165,255), 2, cv2.LINE_AA)
-                # cv2.putText(frame_rgb, frown_text, (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0,255,0) if frowning else (0,165,255), 2, cv2.LINE_AA)
+                cv2.putText(frame, eye_text, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0,255,0) if (left_open and right_open) else (0,165,255), 2, cv2.LINE_AA)
+                cv2.putText(frame, smile_text, (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0,255,0) if smiling else (0,165,255), 2, cv2.LINE_AA)
+                cv2.putText(frame, frown_text, (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0,255,0) if frowning else (0,165,255), 2, cv2.LINE_AA)
                 # (Optional) tiny debug line; comment out if noisy
-                cv2.putText(frame_rgb, debug_text, (10, 120), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200,200,200), 1, cv2.LINE_AA)
-                cv2.putText(frame_rgb, f"{width_norm:.2f}, {corner_lift:.2f}", (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200,200,200), 1, cv2.LINE_AA)
+                cv2.putText(frame, debug_text, (10, 120), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (200,200,200), 1, cv2.LINE_AA)
+                # cv2.putText(frame, f"{width_norm:.2f}, {corner_lift:.2f}", (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200,200,200), 1, cv2.LINE_AA)
 
         # Display frame
-        cv2.imshow("Facial expressions", frame_rgb)
+        cv2.imshow("Face Tracking", frame)
         
         # Break loop with 'q'
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
     # Release resources
-    tel.streamoff()
-    tel.end()
     cv2.destroyAllWindows()
