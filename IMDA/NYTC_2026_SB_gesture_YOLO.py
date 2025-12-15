@@ -348,6 +348,7 @@ def find_object():
     
     Exit: Press 'Q' to quit.
     """
+    print("Object detection started.")
     try:
         while True:
             frame = got.read_camera_data()
@@ -386,21 +387,25 @@ def find_object():
                 if max_idx != -1:  # Object found
                     # Display detection info
                     cv2.putText(output, f"Centre: ({x:.3f}, {y:.3f})", (30, 30),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
                     cv2.putText(output, f"Area: {area:.3f}", (30, 60),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
                     cv2.putText(output, f"Confidence: {max_conf:.3f}", (30, 90),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
 
                     # Horizontal centering (adjust x-axis rotation)
                     if x > 0.6:
-                        got.balance_move_turn(0, 3, 3, 10)  # Turn right
+                        got.balance_move_turn(0, 5, 3, 10)  # Turn right
                     elif x < 0.4:
-                        got.balance_move_turn(0, 3, 2, 10)  # Turn left
+                        got.balance_move_turn(0, 5, 2, 10)  # Turn left
                     else:
                         # Object is centered; approach or stop
-                        if area < 0.06:
-                            got.balance_move_speed(0, 5)  # Move forward
+                        if area < 0.03:
+                            got.balance_move_speed(0, 15) # Move forward
+                        elif area < 0.06:
+                            got.balance_move_speed(0, 6)  # Move forward
+                        elif area > 0.2:
+                            got.balance_move_speed(1, 6)  # Move backward
                         else:
                             got.balance_stop_balancing()  # Close enough; stop
 
