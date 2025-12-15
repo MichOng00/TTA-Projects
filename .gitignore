@@ -18,7 +18,7 @@ IMDA/runs
 *Debug
 
 *vcxproj*
-*.sln
+*.sln*
 *.ilk
 *log
 *exe*
