@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenCV Learning Playground</title>
+    <script async src="https://docs.opencv.org/4.5.2/opencv.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding: 30px;
+        }
+
+        .input-section {
+            grid-column: 1 / -1;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            padding: 20px;
+            background: #f9f9f9;
+        }
+
+        .camera-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .camera-controls button {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background 0.3s;
+        }
+
+        .camera-controls button:hover {
+            background: #764ba2;
+        }
+
+        .camera-controls button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .video-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .video-item {
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            background: black;
+        }
+
+        .video-item canvas,
+        .video-item video {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .video-label {
+            background: #667eea;
+            color: white;
+            padding: 8px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 15px;
+            background: white;
+            border: none;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+            color: #666;
+        }
+
+        .tab-button.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            background: #f5f5f5;
+        }
+
+        .tab-button:hover {
+            background: #f9f9f9;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #eee;
+        }
+
+        .control-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .control-group input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #ddd;
+            outline: none;
+            -webkit-appearance: none;
+            margin-bottom: 8px;
+        }
+
+        .control-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .control-group input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .value-display {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .color-selector {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .color-button {
+            padding: 12px;
+            border: 3px solid transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            color: white;
+        }
+
+        .color-button.red {
+            background: #ff4444;
+        }
+
+        .color-button.green {
+            background: #44ff44;
+            color: black;
+        }
+
+        .color-button.blue {
+            background: #4444ff;
+        }
+
+        .color-button.active {
+            border-color: black;
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.85em;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            color: #1565c0;
+        }
+
+        .info-box strong {
+            color: #0d47a1;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .comparison-item {
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            background: black;
+        }
+
+        .comparison-item canvas {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .comparison-label {
+            background: #667eea;
+            color: white;
+            padding: 8px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .footer {
+            background: #f5f5f5;
+            padding: 20px;
+            text-align: center;
+            color: #666;
+            border-top: 1px solid #ddd;
+        }
+
+        .warning {
+            color: #d32f2f;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .success {
+            color: #388e3c;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 1000px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+
+            .video-container {
+                grid-template-columns: 1fr;
+            }
+
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 OpenCV Learning Playground</h1>
+            <p>Explore edge detection, color spaces, and shape recognition in real-time</p>
+        </div>
+
+        <div class="content">
+            <!-- Input Section -->
+            <div class="input-section">
+                <div class="camera-controls">
+                    <button id="startBtn" onclick="startCamera()">📷 Start Camera</button>
+                    <button id="stopBtn" onclick="stopCamera()" disabled>⏹️ Stop Camera</button>
+                    <button id="captureBtn" onclick="captureFrame()" disabled>📸 Capture Frame</button>
+                </div>
+
+                <div class="video-container">
+                    <div class="video-item">
+                        <div class="video-label">Live Webcam Input</div>
+                        <video id="video" width="100%" autoplay playsinline></video>
+                    </div>
+                    <div class="video-item">
+                        <div class="video-label">Processing Output</div>
+                        <canvas id="canvasOutput" width="320" height="240"></canvas>
+                    </div>
+                </div>
+
+                <div id="status" class="info-box">
+                    Camera ready. Click "Start Camera" to begin.
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div style="grid-column: 1 / -1;">
+                <div class="tabs">
+                    <button class="tab-button active" onclick="switchTab('canny')">🔍 Edge Detection (Canny)</button>
+                    <button class="tab-button" onclick="switchTab('hsv')">🎨 Color Detection (HSV)</button>
+                    <button class="tab-button" onclick="switchTab('contours')">📦 Shape Detection</button>
+                    <button class="tab-button" onclick="switchTab('compare')">📊 Comparison</button>
+                </div>
+            </div>
+
+            <!-- Tab: Canny Edge Detection -->
+            <div id="canny" class="tab-content active" style="grid-column: 1 / -1;">
+                <div class="info-box">
+                    <strong>Canny Edge Detection:</strong> Finds edges by detecting sudden changes in brightness. Adjust thresholds to see more or fewer edges.
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="control-group">
+                        <label>Threshold 1 (Lower): <span id="t1Value" class="value-display">100</span></label>
+                        <input type="range" id="threshold1" min="0" max="500" value="100" oninput="updateCanny()">
+                        <small style="color: #666;">Lower values = more edges detected</small>
+                    </div>
+
+                    <div class="control-group">
+                        <label>Threshold 2 (Upper): <span id="t2Value" class="value-display">200</span></label>
+                        <input type="range" id="threshold2" min="0" max="500" value="200" oninput="updateCanny()">
+                        <small style="color: #666;">Higher values = fewer edges detected</small>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label style="display: flex; align-items: center; gap: 10px;">
+                        <input type="checkbox" id="drawContours" onchange="updateCanny()" checked>
+                        Draw contours on output (green lines = detected shapes)
+                    </label>
+                </div>
+
+                <div class="stats">
+                    <div class="stat-box">
+                        <div class="stat-label">Edge Pixels Found</div>
+                        <div class="stat-value" id="edgePixels">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Shapes Detected</div>
+                        <div class="stat-value" id="shapeCount">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Largest Shape Area</div>
+                        <div class="stat-value" id="largestArea">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">FPS (Speed)</div>
+                        <div class="stat-value" id="fps">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: HSV Color Detection -->
+            <div id="hsv" class="tab-content" style="grid-column: 1 / -1;">
+                <div class="info-box">
+                    <strong>HSV Color Detection:</strong> HSV (Hue, Saturation, Value) is better than RGB for finding specific colors. Pick a color and adjust the ranges.
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div>
+                        <div class="control-group">
+                            <label>Select Color:</label>
+                            <div class="color-selector">
+                                <button class="color-button red active" onclick="selectColor('red')">🔴 Red</button>
+                                <button class="color-button green" onclick="selectColor('green')">🟢 Green</button>
+                                <button class="color-button blue" onclick="selectColor('blue')">🔵 Blue</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="colorInfo" class="control-group" style="background: #fff3e0;">
+                        <strong style="color: #e65100;">Red Color Range (HSV):</strong>
+                        <p>Hue: 0-15, Saturation: 50-255, Value: 50-255</p>
+                        <p style="font-size: 0.9em; color: #666;">Red wraps around (0° and 180°)</p>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+                    <div class="control-group">
+                        <label>Hue Min: <span id="hueMinValue" class="value-display">0</span></label>
+                        <input type="range" id="hueMin" min="0" max="180" value="0" oninput="updateHSV()">
+                    </div>
+
+                    <div class="control-group">
+                        <label>Hue Max: <span id="hueMaxValue" class="value-display">15</span></label>
+                        <input type="range" id="hueMax" min="0" max="180" value="15" oninput="updateHSV()">
+                    </div>
+
+                    <div class="control-group">
+                        <label>Saturation Min: <span id="satMinValue" class="value-display">50</span></label>
+                        <input type="range" id="satMin" min="0" max="255" value="50" oninput="updateHSV()">
+                    </div>
+                </div>
+
+                <div class="stats">
+                    <div class="stat-box">
+                        <div class="stat-label">Pixels of This Color</div>
+                        <div class="stat-value" id="colorPixels">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Objects Found</div>
+                        <div class="stat-value" id="colorObjects">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Coverage %</div>
+                        <div class="stat-value" id="colorCoverage">0%</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Shape Detection -->
+            <div id="contours" class="tab-content" style="grid-column: 1 / -1;">
+                <div class="info-box">
+                    <strong>Shape Detection:</strong> The system finds edges and counts the corners to classify shapes. Triangles = 3 corners, Squares = 4 corners, Circles = many corners.
+                </div>
+
+                <div class="control-group">
+                    <label>Minimum Shape Area to Detect: <span id="areaValue" class="value-display">100</span></label>
+                    <input type="range" id="minArea" min="0" max="5000" value="100" oninput="updateContours()">
+                    <small style="color: #666;">Larger values = only detect big shapes</small>
+                </div>
+
+                <div class="stats">
+                    <div class="stat-box">
+                        <div class="stat-label">Total Shapes</div>
+                        <div class="stat-value" id="totalShapes">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Triangles</div>
+                        <div class="stat-value" id="triangles">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Rectangles</div>
+                        <div class="stat-value" id="rectangles">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Circles</div>
+                        <div class="stat-value" id="circles">0</div>
+                    </div>
+                </div>
+
+                <div id="shapeList" style="margin-top: 20px; padding: 15px; background: #f9f9f9; border-radius: 8px;">
+                    <strong>Detected Shapes:</strong>
+                    <div id="shapeListContent" style="margin-top: 10px; color: #666;">
+                        (Shapes will appear here when detected)
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Comparison -->
+            <div id="compare" class="tab-content" style="grid-column: 1 / -1;">
+                <div class="info-box">
+                    <strong>Comparison View:</strong> See original, grayscale, edges, and color detection all at once.
+                </div>
+
+                <div class="comparison-grid" style="grid-template-columns: repeat(2, 1fr);">
+                    <div class="comparison-item">
+                        <div class="comparison-label">Original Input</div>
+                        <canvas id="compareOriginal"></canvas>
+                    </div>
+                    <div class="comparison-item">
+                        <div class="comparison-label">Grayscale</div>
+                        <canvas id="compareGray"></canvas>
+                    </div>
+                    <div class="comparison-item">
+                        <div class="comparison-label">Canny Edges</div>
+                        <canvas id="compareCanny"></canvas>
+                    </div>
+                    <div class="comparison-item">
+                        <div class="comparison-label">Color Detection</div>
+                        <canvas id="compareColor"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p><strong>OpenCV Learning Playground</strong> - Interactive tool for K-12 computer vision education</p>
+            <p style="margin-top: 10px; font-size: 0.9em;">
+                💡 <strong>Tip:</strong> Try adjusting sliders in real-time to see how parameters affect detection!
+            </p>
+            <p style="margin-top: 10px; font-size: 0.85em; color: #999;">
+                Uses OpenCV.js (runs entirely in your browser - no data sent anywhere)
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let video = document.getElementById('video');
+        let canvasOutput = document.getElementById('canvasOutput');
+        let ctxOutput = canvasOutput.getContext('2d');
+        let cameraActive = false;
+        let currentFrame = null;
+        let lastFPS = 0;
+        let frameCount = 0;
+        let lastTime = Date.now();
+
+        // Color ranges (HSV) - more sensitive and consistent defaults
+        // Lowered saturation/value mins to be more sensitive (captures paler/darker colors)
+        let colorRanges = {
+            red: { hMin: 0, hMax: 15, sMin: 50, sMax: 255, vMin: 50, vMax: 255 },
+            green: { hMin: 35, hMax: 85, sMin: 50, sMax: 255, vMin: 50, vMax: 255 },
+            blue: { hMin: 90, hMax: 140, sMin: 50, sMax: 255, vMin: 50, vMax: 255 }
+        };
+        let selectedColor = 'red';
+
+        // Start webcam
+        function startCamera() {
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(stream => {
+                    video.srcObject = stream;
+                    cameraActive = true;
+                    document.getElementById('startBtn').disabled = true;
+                    document.getElementById('stopBtn').disabled = false;
+                    document.getElementById('captureBtn').disabled = false;
+                    document.getElementById('status').innerHTML = '✅ Camera active! Processing started.';
+                    processFrame();
+                })
+                .catch(err => {
+                    document.getElementById('status').innerHTML = '<span class="warning">❌ Camera access denied. Check System Preferences → Security & Privacy → Camera</span>';
+                });
+        }
+
+        // Stop webcam
+        function stopCamera() {
+            let tracks = video.srcObject.getTracks();
+            tracks.forEach(track => track.stop());
+            cameraActive = false;
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('stopBtn').disabled = true;
+            document.getElementById('captureBtn').disabled = true;
+            document.getElementById('status').innerHTML = 'Camera stopped.';
+        }
+
+        // Process frames continuously
+        function processFrame() {
+            if (!cameraActive) return;
+
+            if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                // Get the active tab
+                let activeTab = document.querySelector('.tab-content.active').id;
+
+                // Draw video to canvas
+                canvasOutput.width = video.videoWidth;
+                canvasOutput.height = video.videoHeight;
+                ctxOutput.drawImage(video, 0, 0);
+
+                // Get image data
+                let imageData = ctxOutput.getImageData(0, 0, canvasOutput.width, canvasOutput.height);
+                let src = cv.matFromImageData(imageData);
+                let dst = new cv.Mat();
+
+                try {
+                    if (activeTab === 'canny') {
+                        processCanny(src, dst);
+                    } else if (activeTab === 'hsv') {
+                        processHSV(src, dst);
+                    } else if (activeTab === 'contours') {
+                        processContours(src, dst);
+                    } else if (activeTab === 'compare') {
+                        processComparison(src);
+                        src.delete();
+                        requestAnimationFrame(processFrame);
+                        return;
+                    }
+
+                    // Display result
+                    cv.imshow('canvasOutput', dst);
+                } catch (e) {
+                    console.error('Processing error:', e);
+                }
+
+                src.delete();
+                dst.delete();
+
+                // Calculate FPS
+                frameCount++;
+                let now = Date.now();
+                if (now - lastTime >= 1000) {
+                    lastFPS = frameCount;
+                    frameCount = 0;
+                    lastTime = now;
+                    document.getElementById('fps').textContent = lastFPS;
+                }
+            }
+
+            requestAnimationFrame(processFrame);
+        }
+
+        // Canny Edge Detection
+        function processCanny(src, dst) {
+            let gray = new cv.Mat();
+            cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
+
+            let threshold1 = parseInt(document.getElementById('threshold1').value);
+            let threshold2 = parseInt(document.getElementById('threshold2').value);
+
+            cv.Canny(gray, dst, threshold1, threshold2);
+
+            // Count edge pixels
+            let edgePixels = cv.countNonZero(dst);
+            document.getElementById('edgePixels').textContent = edgePixels.toLocaleString();
+
+            // Find contours if checkbox is checked
+            if (document.getElementById('drawContours').checked) {
+                let contours = new cv.MatVector();
+                let hierarchy = new cv.Mat();
+                cv.findContours(dst, contours, hierarchy, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE);
+
+                document.getElementById('shapeCount').textContent = contours.size();
+
+                // Find largest shape
+                let maxArea = 0;
+                for (let i = 0; i < contours.size(); i++) {
+                    let contour = contours.get(i);
+                    let area = cv.contourArea(contour);
+                    if (area > maxArea) maxArea = area;
+                }
+                document.getElementById('largestArea').textContent = Math.round(maxArea);
+
+                // Draw contours on original
+                let dstColor = new cv.Mat();
+                cv.cvtColor(dst, dstColor, cv.COLOR_GRAY2RGBA);
+                cv.drawContours(dstColor, contours, -1, new cv.Scalar(0, 255, 0, 255), 2);
+                dstColor.copyTo(dst);
+                dstColor.delete();
+
+                contours.delete();
+                hierarchy.delete();
+            }
+
+            gray.delete();
+
+            // Update value displays
+            document.getElementById('t1Value').textContent = threshold1;
+            document.getElementById('t2Value').textContent = threshold2;
+        }
+
+        // HSV Color Detection
+        function processHSV(src, dst) {
+            let hsv = new cv.Mat();
+            cv.cvtColor(src, hsv, cv.COLOR_RGBA2RGB);
+            cv.cvtColor(hsv, hsv, cv.COLOR_RGB2HSV);
+
+            let range = colorRanges[selectedColor];
+            let lower = cv.matFromArray(1, 3, cv.CV_8U, [range.hMin, range.sMin, range.vMin]);
+            let upper = cv.matFromArray(1, 3, cv.CV_8U, [range.hMax, range.sMax, range.vMax]);
+
+            cv.inRange(hsv, lower, upper, dst);
+
+            // Count pixels
+            let colorPixels = cv.countNonZero(dst);
+            let totalPixels = src.rows * src.cols;
+            let coverage = ((colorPixels / totalPixels) * 100).toFixed(1);
+
+            document.getElementById('colorPixels').textContent = colorPixels.toLocaleString();
+            document.getElementById('colorCoverage').textContent = coverage + '%';
+
+            // Find objects
+            let contours = new cv.MatVector();
+            let hierarchy = new cv.Mat();
+            cv.findContours(dst, contours, hierarchy, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE);
+
+            document.getElementById('colorObjects').textContent = contours.size();
+
+            contours.delete();
+            hierarchy.delete();
+            lower.delete();
+            upper.delete();
+            hsv.delete();
+
+            // Update displays
+            document.getElementById('hueMinValue').textContent = range.hMin;
+            document.getElementById('hueMaxValue').textContent = range.hMax;
+            document.getElementById('satMinValue').textContent = range.sMin;
+        }
+
+        // Update HSV ranges
+        function updateHSV() {
+            colorRanges[selectedColor].hMin = parseInt(document.getElementById('hueMin').value);
+            colorRanges[selectedColor].hMax = parseInt(document.getElementById('hueMax').value);
+            colorRanges[selectedColor].sMin = parseInt(document.getElementById('satMin').value);
+        }
+
+        // Select color
+        function selectColor(color) {
+            selectedColor = color;
+            document.querySelectorAll('.color-button').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Update ranges display
+            let range = colorRanges[color];
+            document.getElementById('hueMin').value = range.hMin;
+            document.getElementById('hueMax').value = range.hMax;
+            document.getElementById('satMin').value = range.sMin;
+
+            let colorNames = { red: '🔴 Red', green: '🟢 Green', blue: '🔵 Blue' };
+            let colorHSV = {
+                red: 'Hue: 0-10 or 170-180',
+                green: 'Hue: 40-80',
+                blue: 'Hue: 100-130'
+            };
+
+            document.getElementById('colorInfo').innerHTML = `
+                <strong style="color: ${color === 'red' ? '#e65100' : color === 'green' ? '#1b5e20' : '#0d47a1'};">${colorNames[color]} Color Range (HSV):</strong>
+                <p>${colorHSV[color]}, Saturation: 100-255, Value: 100-255</p>
+                <p style="font-size: 0.9em; color: #666;">Adjust sliders to fine-tune detection</p>
+            `;
+        }
+
+        // Shape Detection
+        function processContours(src, dst) {
+            let gray = new cv.Mat();
+            let edges = new cv.Mat();
+            cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
+            cv.Canny(gray, edges, 100, 200);
+
+            let contours = new cv.MatVector();
+            let hierarchy = new cv.Mat();
+            cv.findContours(edges, contours, hierarchy, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE);
+
+            // Create output
+            let dstColor = new cv.Mat();
+            cv.cvtColor(edges, dstColor, cv.COLOR_GRAY2RGBA);
+            src.copyTo(dstColor);
+
+            let minArea = parseInt(document.getElementById('minArea').value);
+            let triangles = 0, rectangles = 0, circles = 0;
+            let shapeList = [];
+
+            for (let i = 0; i < contours.size(); i++) {
+                let contour = contours.get(i);
+                let area = cv.contourArea(contour);
+
+                if (area < minArea) continue;
+
+                let approx = new cv.Mat();
+                let epsilon = 0.02 * cv.arcLength(contour, true);
+                cv.approxPolyDP(contour, approx, epsilon, true);
+
+                let vertices = approx.rows;
+                let shapeType = 'Unknown';
+
+                if (vertices === 3) {
+                    shapeType = 'Triangle';
+                    triangles++;
+                } else if (vertices === 4) {
+                    shapeType = 'Rectangle';
+                    rectangles++;
+                } else if (vertices > 6) {
+                    shapeType = 'Circle';
+                    circles++;
+                }
+
+                if (shapeType !== 'Unknown') {
+                    shapeList.push(`${shapeType} (area: ${Math.round(area)}px)`);
+                }
+
+                // Draw shape
+                cv.drawContours(dstColor, contours, i, new cv.Scalar(0, 255, 0, 255), 2);
+                approx.delete();
+            }
+
+            dstColor.copyTo(dst);
+
+            document.getElementById('totalShapes').textContent = triangles + rectangles + circles;
+            document.getElementById('triangles').textContent = triangles;
+            document.getElementById('rectangles').textContent = rectangles;
+            document.getElementById('circles').textContent = circles;
+
+            // Update shape list
+            let shapeListContent = shapeList.length > 0 ?
+                shapeList.slice(0, 10).join('<br>') + (shapeList.length > 10 ? `<br>... and ${shapeList.length - 10} more` : '') :
+                '<span style="color: #999;">No shapes detected</span>';
+            document.getElementById('shapeListContent').innerHTML = shapeListContent;
+
+            gray.delete();
+            edges.delete();
+            contours.delete();
+            hierarchy.delete();
+            dstColor.delete();
+
+            document.getElementById('areaValue').textContent = minArea;
+        }
+
+        // Comparison view
+        function processComparison(src) {
+            // Original
+            cv.imshow('compareOriginal', src);
+
+            // Grayscale
+            let gray = new cv.Mat();
+            cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
+            cv.imshow('compareGray', gray);
+
+            // Canny
+            let edges = new cv.Mat();
+            cv.Canny(gray, edges, 100, 200);
+            cv.imshow('compareCanny', edges);
+
+            // Color detection
+            let hsv = new cv.Mat();
+            cv.cvtColor(src, hsv, cv.COLOR_RGBA2RGB);
+            cv.cvtColor(hsv, hsv, cv.COLOR_RGB2HSV);
+
+            let range = colorRanges[selectedColor];
+            let lower = cv.matFromArray(1, 3, cv.CV_8U, [range.hMin, range.sMin, range.vMin]);
+            let upper = cv.matFromArray(1, 3, cv.CV_8U, [range.hMax, range.sMax, range.vMax]);
+            let colorMask = new cv.Mat();
+            cv.inRange(hsv, lower, upper, colorMask);
+            cv.imshow('compareColor', colorMask);
+
+            gray.delete();
+            edges.delete();
+            hsv.delete();
+            lower.delete();
+            upper.delete();
+            colorMask.delete();
+        }
+
+        // Tab switching
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Update handlers
+        function updateCanny() {
+            // Processing happens in processFrame
+        }
+
+        function updateContours() {
+            // Processing happens in processFrame
+        }
+
+        // Capture frame
+        function captureFrame() {
+            let link = document.createElement('a');
+            link.href = canvasOutput.toDataURL();
+            link.download = 'opencv_capture_' + Date.now() + '.png';
+            link.click();
+            document.getElementById('status').innerHTML = '<span class="success">✅ Frame captured and downloaded!</span>';
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('OpenCV Playground loaded. OpenCV.js status:', typeof cv !== 'undefined' ? '✅ Ready' : '⏳ Loading...');
+        });
+    </script>
+</body>
+</html>
