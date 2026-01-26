@@ -19,7 +19,7 @@ def main():
                 break
 
             nparr = np.frombuffer(frame, np.uint8)
-            data = cv2.imdecode(nparr,cv2.IMREAD_COLOR)
+            data = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
             # # Draw a red rectangle
             # cv2.rectangle(data, (50, 50), (200, 200), (0, 0, 255), 2)
