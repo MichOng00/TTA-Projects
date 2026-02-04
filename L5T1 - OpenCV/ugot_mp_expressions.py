@@ -4,7 +4,7 @@ import numpy as np
 from ugot import ugot
 
 got = ugot.UGOT()
-got.initialize("192.168.1.217")
+got.initialize("192.168.1.226")
 got.open_camera()
 
 # Initialize MediaPipe Face Detection
