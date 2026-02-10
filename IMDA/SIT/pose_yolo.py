@@ -11,6 +11,7 @@ except ImportError:
     _HAS_IPYTHON = False
 
 COCO_KEYPOINTS = [
+    
     "nose", "left_eye", "right_eye", "left_ear", "right_ear",
     "left_shoulder", "right_shoulder", "left_elbow", "right_elbow",
     "left_wrist", "right_wrist", "left_hip", "right_hip",
@@ -469,6 +470,7 @@ def run_pose_control_inline(
 
 if __name__ == "__main__":
     got = ugot.UGOT()
-    got.initialize("192.168.1.192")
+    got.initialize("10.198.80.147")
 
-    run_pose_control(got=got)
+    run_pose_control(up_margin_factor=0.6,
+     down_margin_factor=0.6, got=got)

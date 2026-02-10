@@ -18,7 +18,7 @@ from ultralytics import YOLO
 # ============================================================================
 # CONFIGURATION & INITIALIZATION
 # ============================================================================
-UGOT_IP = "192.168.1.230"
+UGOT_IP = "192.168.1.70"
 YOLO_MODEL = "best_coffee.pt"
 TARGET_HEIGHT = 480
 WEBCAM_INDEX = 0
