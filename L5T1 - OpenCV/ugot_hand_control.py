@@ -66,72 +66,43 @@ def get_hand_speed(hand_landmarks, w, h):
 def count_fingers_up(hand_landmarks, w, h):
     """
     Count how many fingers are up (extended).
-    Returns: number of fingers (0-5), confidence (0.0-1.0)
-    
-    Finger mapping:
-    - 1 finger up = forward
-    - 2 fingers up = backward
-    - 3 fingers up = left
-    - 4 fingers up = right
+    Returns: number of fingers (0-5)
     """
     # Landmarks: 0=wrist, 1-4=thumb, 5-8=index, 9-12=middle, 13-16=ring, 17-20=pinky
     # Tip indices: 4=thumb, 8=index, 12=middle, 16=ring, 20=pinky
     # PIP indices: 3=thumb, 6=index, 10=middle, 14=ring, 18=pinky (middle joints)
-    
-    finger_tips = [8, 12, 16, 20]          # Thumb, Index, Middle, Ring, Pinky
-    finger_pips = [6, 10, 14, 18]          # PIP joints for each finger
-    
+    finger_tips = [8, 12, 16, 20]
+    finger_pips = [6, 10, 14, 18]
     fingers_up = 0
-    
     for tip_idx, pip_idx in zip(finger_tips, finger_pips):
         tip = lmk_xy(hand_landmarks, tip_idx, w, h)
         pip = lmk_xy(hand_landmarks, pip_idx, w, h)
-        
-        # Finger is up if tip is above (lower y value than) the PIP joint
         if tip[1] < pip[1]:
             fingers_up += 1
-    
-    confidence = 0.8  # Relatively high confidence for finger counting
-    
-    # Map finger count to gesture
-    gesture = "idle"
+    return fingers_up
+
+
+
+
+
+
+# New execute_command using fingers_up and speed
+def execute_command(fingers_up, speed):
     if fingers_up == 1:
-        gesture = "forward"
-    elif fingers_up == 2:
-        gesture = "backward"
-    elif fingers_up == 3:
-        gesture = "left"
-    elif fingers_up == 4:
-        gesture = "right"
-    
-    return gesture, confidence
-
-
-def detect_right_hand_gesture(hand_landmarks, w, h, handedness):
-    """
-    Detect hand gesture from right hand landmarks based on fingers up.
-    Returns: gesture_type, confidence
-    """
-    return count_fingers_up(hand_landmarks, w, h)
-
-
-def execute_command(gesture, speed, handedness):
-    """Execute robot movement based on detected gesture."""    
-    # Execute movement command
-    if gesture == "forward":
-        got.mecanum_move_speed(0, speed)
+        got.mecanum_move_speed(0, speed) # forward
         print(f"→ Forward ({speed})")
-    elif gesture == "backward":
-        got.mecanum_move_speed(1, speed)
+    elif fingers_up == 2:
+        got.mecanum_move_speed(1, speed) # backward
         print(f"← Backward ({speed})")
-    elif gesture == "left":
-        got.mecanum_turn_speed(2, speed)
+    elif fingers_up == 3:
+        got.mecanum_turn_speed(2, speed) # left
         print(f"⟲ Turn Left")
-    elif gesture == "right":
-        got.mecanum_turn_speed(3, speed)
+    elif fingers_up == 4:
+        got.mecanum_turn_speed(3, speed) # right
         print(f"⟳ Turn Right")
     else:
         got.mecanum_stop()
+        print("Stopped")
  
 
 
@@ -153,24 +124,19 @@ try:
         # Detect hands
         results = hands.process(frame_rgb)
         
-        left_hand = None
-        right_hand = None
-        left_handedness = None
-        right_handedness = None
-        
+        # Assign hands by handedness
+        left_speed = move_speed
+        left_info = ""
+        gesture_info = ""
+        right_fingers = None
+        left_fingers = None
+        right_wrist = None
+        left_wrist = None
         if results.multi_hand_landmarks and results.multi_handedness:
             for hand_landmarks, handedness_info in zip(
                 results.multi_hand_landmarks, results.multi_handedness
             ):
                 hand_label = handedness_info.classification[0].label
-                
-                if hand_label == "Left":
-                    left_hand = hand_landmarks
-                    left_handedness = hand_label
-                else:
-                    right_hand = hand_landmarks
-                    right_handedness = hand_label
-                
                 # Draw hand landmarks
                 mp_draw.draw_landmarks(
                     frame,
@@ -183,32 +149,25 @@ try:
                         color=(255, 0, 0), thickness=2
                     )
                 )
-        
-        # Process left hand for speed control
-        left_speed = move_speed
-        left_info = ""
-        if left_hand:
-            left_speed, wrist_pos = get_hand_speed(left_hand, w, h)
-            left_info = f"LEFT HAND - Speed: {left_speed}cm/s"
-            # Draw speed indicator
-            cv2.circle(frame, (int(wrist_pos[0]), int(wrist_pos[1])), 15, (0, 255, 255), -1)
+                if hand_label == "Right":
+                    right_fingers = count_fingers_up(hand_landmarks, w, h)
+                    right_wrist = lmk_xy(hand_landmarks, 0, w, h)
+                elif hand_label == "Left":
+                    left_fingers = count_fingers_up(hand_landmarks, w, h)
+                    left_wrist = lmk_xy(hand_landmarks, 0, w, h)
+        # Speed from left hand, command from right hand
+        if left_wrist is not None:
+            left_speed, _ = get_hand_speed(hand_landmarks, w, h) if left_fingers is not None else (move_speed, None)
+            left_info = f"LEFT HAND - Speed: {left_speed}cm/s, Fingers: {left_fingers if left_fingers is not None else 0}"
+            cv2.circle(frame, (int(left_wrist[0]), int(left_wrist[1])), 15, (0, 255, 255), -1)
             cv2.putText(
-                frame, f"{left_speed}", (int(wrist_pos[0]) - 20, int(wrist_pos[1]) - 20),
+                frame, f"{left_speed}", (int(left_wrist[0]) - 20, int(left_wrist[1]) - 20),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2
             )
-        
-        # Process right hand for direction control
-        if right_hand:
-            gesture, gesture_confidence = detect_right_hand_gesture(right_hand, w, h, right_handedness)
-            gesture_info = f"RIGHT HAND - Gesture: {gesture.upper()} ({gesture_confidence:.2f})"
-            
-            # Execute movement if confidence is high enough
-            if gesture_confidence > 0.2:
-                execute_command(gesture, left_speed, right_handedness)
-        else:
-            gesture = "idle"
-            gesture_confidence = 0.0
-            gesture_info = ""
+        if right_fingers is not None:
+            gesture_info = f"RIGHT HAND - Fingers: {right_fingers}"
+            execute_command(right_fingers, left_speed)
+        # ...existing code for HUD and display...
         
         # Display HUD
         y_offset = 30
