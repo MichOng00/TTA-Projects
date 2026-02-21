@@ -24,3 +24,6 @@ IMDA/runs
 *exe*
 
 *pdb*
+
+# folder-specific
+IMDA/SIT/*.csv
