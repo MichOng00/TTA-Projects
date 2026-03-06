@@ -43,9 +43,11 @@ Students learn how to use OpenCV and MediaPipe for real-time image processing an
 
 This module bridges traditional computer vision with practical robotics applications. Students connect pre-trained models to hardware such as the UGOT robot or a drone, implementing face tracking and automated camera movement to follow a target.
 
-### NYTC 2026 - Object Detection
+### L5T2 - Object Detection
 
-This code was developed as proof of concept while designing a [national competition](https://www.imda.gov.sg/activities/activities-catalogue/national-youth-tech-championship) for secondary school students (aged 13-17). The annual competition aims to expose students to real-world technology and AI applications. For 2026, teams are challenged to perform an end-to-end object detection pipeline to complete a robot navigation challenge. The [Jupyter notebook](https://github.com/MichOng00/TTA-Projects/blob/main/IMDA/NYTC_2026_demo_noVOC.ipynb) demonstrates and explains a simple workflow that students could use.
+This code was initially developed as proof of concept while designing a [national competition](https://www.imda.gov.sg/activities/activities-catalogue/national-youth-tech-championship) for secondary school students (aged 13-17). Teams were to perform an end-to-end object detection pipeline to complete a robot navigation challenge. The [Jupyter notebook](https://github.com/MichOng00/TTA-Projects/blob/main/IMDA/NYTC_2026_demo_noVOC.ipynb) demonstrates and explains a simple workflow that students could use.
+
+Subsequently, the competition format was modified and the code was adapted for use in the classroom.
 
 **Pipeline Stages:**
 
