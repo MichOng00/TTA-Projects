@@ -8,7 +8,6 @@ def find_face(image):
     face_cascade = cv2.CascadeClassifier("haarcascades/haarcascade_frontalface_default.xml")
     image_gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
     faces = face_cascade.detectMultiScale(image_gray, 1.2, 8) # [(x, y, w, h), (x, y, w, h)]
-
     face_centers = []
     face_areas = []
 
@@ -43,7 +42,6 @@ def track_face(face_info, image_with, pid_constants, previous_error, tel):
         pitch = -20
     elif area != 0:
         pitch = 20
-
     if x == 0:
         yaw = 0
         error = 0
