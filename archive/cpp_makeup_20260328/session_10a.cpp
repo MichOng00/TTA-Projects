@@ -1,3 +1,4 @@
+// how to partial sum
 #include <iostream>
 #include <vector>
 #include <algorithm>
@@ -8,7 +9,7 @@ using namespace std;
 vector <long long> psum(const vector<int> &arr){
     vector<long long> psums(arr.size() + 1);
     psums[0] = 0;
-    // for (int i = 0;  i < arr.size(); i++){ psums[i + 1] + psums[i] + arr[i]; }
+    // for (int i = 0;  i < arr.size(); i++){ psums[i + 1] = psums[i] + arr[i]; }
     partial_sum(arr.begin(), arr.end(), psums.begin() + 1);
     return psums;
 }

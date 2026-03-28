@@ -1,3 +1,4 @@
+// breed counting https://usaco.org/index.php?page=viewproblem2&cpid=572
 #include <iostream>
 #include <vector>
 #include <numeric>

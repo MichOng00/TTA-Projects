@@ -6,11 +6,10 @@
 using namespace std;
 
 int main() {
-    
     int n;
     long long x;
     cin >> n >> x;
-	
+
     vector<long long> a(n);
     for (int i = 0; i < n; i++) cin >> a[i];
 
@@ -20,13 +19,18 @@ int main() {
         prefix[i + 1] = prefix[i] + a[i];
     }
 
-    int ans = 0;
+    long long ans = 0;
+
+    // Check all subarrays (l, r) using prefix sums
     for (int r = 0; r < n; r++) {
         for (int l = 0; l <= r; l++) {
-			int sum_lr = prefix[r + 1] - prefix[l];
+            // Sum of subarray a[l..r] = prefix[r+1] - prefix[l]
+            long long sum_lr = prefix[r + 1] - prefix[l];
             if (sum_lr == x) ans++;
         }
     }
 
-	cout << ans << endl;
+
+    cout << ans << endl;
+
 }
