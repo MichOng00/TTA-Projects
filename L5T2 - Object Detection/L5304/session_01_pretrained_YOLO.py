@@ -4,7 +4,7 @@ from ultralytics import YOLO
 
 from ugot import ugot
 got = ugot.UGOT()
-got.initialize("192.168.1.217")
+got.initialize("192.168.1.111")
 got.open_camera()
 
 # load pretrained model
