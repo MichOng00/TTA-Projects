@@ -3,7 +3,9 @@ Session 03 — Pinch Detection & Interaction
 =====================================================
 GOAL: Detect pinch gestures (thumb touching index) and visualize pinch positions.
 
-Concepts:
+Builds on Session 02: Adds pinch detection to hand visualization.
+
+New Concepts:
     - Calculating distance between two hand landmarks
     - Detecting pinch gesture (distance < threshold)
     - Finding pinch midpoint between thumb and index
@@ -30,18 +32,18 @@ BaseOptions = mp_python.BaseOptions
 HandLandmarker = mp_vision.HandLandmarker
 HandLandmarkerOpts = mp_vision.HandLandmarkerOptions
 
-# Constants
+# Constants (from Session 01)
 WINDOW_NAME = "Session 03: Pinch Detection & Interaction"
 TARGET_W = 1280
 TARGET_H = 720
 FPS = 60
 
-# Hand landmarks indices
+# Hand landmarks indices (from Session 02)
 TIP_INDEX = 8   # index finger tip
 TIP_THUMB = 4   # thumb tip
 FINGERTIP_INDICES = [4, 8, 12, 16, 20]
 
-# Hand skeleton connections
+# Hand skeleton connections (from Session 02)
 HAND_CONNECTIONS = [
     (0,1),(1,2),(2,3),(3,4),
     (0,5),(5,6),(6,7),(7,8),
@@ -51,7 +53,7 @@ HAND_CONNECTIONS = [
     (0,17),
 ]
 
-# Pinch detection threshold (in pixels)
+# Pinch detection threshold (NEW - Session 03)
 PINCH_DIST_PX = 60
 
 # Model download

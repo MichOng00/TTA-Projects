@@ -16,6 +16,7 @@ Requirements:
 
 import os
 import math
+import time
 import urllib.request
 import cv2
 import mediapipe as mp
@@ -109,7 +110,6 @@ def run():
         clock.tick(FPS)
         
         # Get current time in milliseconds for MediaPipe
-        import time
         now = time.time()
         timestamp_ms = int(now * 1000)
 

@@ -3,13 +3,16 @@ Session 04 — Orb Physics & Pedestals
 =====================================================
 GOAL: Create game objects (Orbs and Pedestals) with physics, glowing effects, and visual polish.
 
-Concepts:
+Builds on Session 03: Adds game objects while keeping hand detection and pinch visualization.
+
+New Concepts:
     - Object-oriented design with Orb and Pedestal classes
     - Physics simulation (velocity, bouncing, friction)
     - Custom drawing functions for visual effects
     - Glow/light effects for game objects
     - Color management for different object types
     - Text rendering with shadows
+    - Game object initialization
 
 Requirements:
     pip install opencv-python pygame "mediapipe>=0.10.33" numpy
@@ -271,6 +274,7 @@ def run():
         frame = cv2.flip(frame, 1)
         dt = min(clock.tick(FPS) / 1000.0, 0.05)
         now = time.time()
+        timestamp_ms = int(now * 1000)
 
         rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         frame_surf = pygame.image.frombuffer(rgb.tobytes(), (W, H), "RGB")
@@ -280,6 +284,28 @@ def run():
         overlay = pygame.Surface((W, H), pygame.SRCALPHA)
         overlay.fill((0, 0, 0, 120))
         screen.blit(overlay, (0, 0))
+
+        # Run hand detection (from Session 01-03)
+        mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb)
+        result = landmarker.detect_for_video(mp_image, timestamp_ms)
+
+        # Extract and visualize hand landmarks (from Session 02-03)
+        raw_lms_list = []
+        for hand_lms in result.hand_landmarks:
+            pts = [(int(lm.x * W), int(lm.y * H)) for lm in hand_lms]
+            raw_lms_list.append(pts)
+            
+            # Draw hand connections (skeleton)
+            for a, b in HAND_CONNECTIONS:
+                pygame.draw.line(screen, (180, 180, 180), pts[a], pts[b], 1)
+            
+            # Highlight fingertips
+            for tip_idx in FINGERTIP_INDICES:
+                pygame.draw.circle(screen, (255, 255, 100), pts[tip_idx], 6)
+            
+            # Highlight thumb and index
+            pygame.draw.circle(screen, (255, 100, 100), pts[TIP_THUMB], 8)
+            pygame.draw.circle(screen, (100, 100, 255), pts[TIP_INDEX], 8)
 
         # Update and draw game objects
         for orb in orbs:

@@ -1,14 +1,24 @@
 """
-Session 06 — Mystic Shelf (Complete Game)
+Session 06 — Mystic Shelf (Complete Game) - CAPSTONE PROJECT
 =====================================================
 GOAL: Complete, polished game with timer, win condition, score tracking, and full UI.
 
+Builds on Session 05: Adds game loop features while keeping all interaction mechanics.
+
 This is the final capstone project combining all concepts from Sessions 1-5:
-    - Hand detection and tracking (Session 1-2)
+    - Hand detection and tracking (Sessions 1-2)
     - Pinch gesture detection (Session 3)
     - Physics simulation (Session 4)
     - Orb interaction and snapping (Session 5)
     - Game loop, scoring, win state, and restart (Session 6)
+
+New Concepts:
+    - Game state management (playing vs won)
+    - Timer system (elapsed time tracking)
+    - Win condition detection
+    - Victory screen with animation
+    - Game restart functionality
+    - Professional UI rendering
 
 Controls:
     PINCH gesture (thumb touching index) = grab and drag orbs

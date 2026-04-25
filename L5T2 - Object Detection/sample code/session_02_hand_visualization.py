@@ -3,7 +3,9 @@ Session 02 — Hand Pose Visualization
 =====================================================
 GOAL: Visualize hand landmarks (skeleton) and fingertips detected by MediaPipe.
 
-Concepts:
+Builds on Session 01: Adds hand skeleton visualization to the existing hand detection.
+
+New Concepts:
     - Drawing hand landmarks as points
     - Drawing hand connections (skeleton structure)
     - Highlighting important fingertips (thumb, index, middle, ring, pinky)
@@ -12,9 +14,8 @@ Concepts:
 Requirements:
     pip install opencv-python pygame "mediapipe>=0.10.33" numpy
 """
-
+# pip install opencv-python pygame "mediapipe>=0.10.33" numpy
 import os
-import math
 import time
 import urllib.request
 import cv2
@@ -29,18 +30,18 @@ BaseOptions = mp_python.BaseOptions
 HandLandmarker = mp_vision.HandLandmarker
 HandLandmarkerOpts = mp_vision.HandLandmarkerOptions
 
-# Constants
+# Constants (from Session 01)
 WINDOW_NAME = "Session 02: Hand Pose Visualization"
 TARGET_W = 1280
 TARGET_H = 720
 FPS = 60
 
-# Hand landmarks indices
+# Hand landmarks indices (NEW - Session 02)
 TIP_INDEX = 8      # index finger tip
 TIP_THUMB = 4      # thumb tip
 FINGERTIP_INDICES = [4, 8, 12, 16, 20]  # All five fingertips
 
-# Hand skeleton connections
+# Hand skeleton connections (NEW - Session 02)
 HAND_CONNECTIONS = [
     (0,1),(1,2),(2,3),(3,4),        # Thumb
     (0,5),(5,6),(6,7),(7,8),        # Index
@@ -82,15 +83,7 @@ def run():
     )
     landmarker = HandLandmarker.create_from_options(options)
 
-    # Open camera
-    if os.name == "nt" and hasattr(cv2, "CAP_DSHOW"):
-        cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
-    else:
-        cap = cv2.VideoCapture(0)
-    
-    if not cap.isOpened():
-        print("[Session 02] ERROR: Unable to open the camera.")
-        return
+    cap = cv2.VideoCapture(0)
 
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, TARGET_W)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, TARGET_H)
@@ -108,10 +101,7 @@ def run():
     running = True
 
     while running:
-        ret, frame = cap.read()
-        if not ret:
-            print("[Session 02] ERROR: Camera frame read failed.")
-            break
+        _, frame = cap.read()
 
         # Flip frame horizontally for selfie view
         frame = cv2.flip(frame, 1)

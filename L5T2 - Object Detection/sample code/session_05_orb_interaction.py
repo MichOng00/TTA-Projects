@@ -3,7 +3,9 @@ Session 05 — Orb Interaction & Snapping
 =====================================================
 GOAL: Make orbs interactive - grab them with pinch gesture and snap them to matching pedestals.
 
-Concepts:
+Builds on Session 04: Adds interaction logic while keeping all previous features.
+
+New Concepts:
     - Orb grabbing with pinch detection
     - Smooth interpolation for dragging
     - Snapping to target pedestals
