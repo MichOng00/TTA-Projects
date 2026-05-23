@@ -4,8 +4,11 @@ import pygame
 # Optional gyro support from the ugot module.
 try:
     from ugot import ugot
+    got = ugot.UGOT()
+    got.initialize("192.168.1.181")
     GYRO_AVAILABLE = True
-except ImportError:
+except:
+    got = None
     GYRO_AVAILABLE = False
 
 pygame.init()
@@ -37,12 +40,6 @@ SPAWN_INTERVAL = 900
 
 MAX_X = ROAD_RIGHT - CAR_WIDTH - 20
 MIN_X = ROAD_LEFT + 20
-
-if GYRO_AVAILABLE:
-    got = ugot.UGOT()
-    got.initialize("192.168.1.181")
-else:
-    got = None
 
 
 def clamp(value, low, high):
