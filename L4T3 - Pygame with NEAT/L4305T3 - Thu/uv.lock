@@ -1,0 +1,8 @@
+version = 1
+revision = 3
+requires-python = ">=3.12"
+
+[[package]]
+name = "l4305t3-thu"
+version = "0.1.0"
+source = { virtual = "." }
