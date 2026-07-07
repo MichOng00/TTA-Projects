@@ -3,6 +3,14 @@
 .vscode
 **/__pycache__/
 
+# environments
+*.env
+*.envrc
+*.venv
+*env/
+*venv/
+*ENV/
+
 # PyTorch and YOLO
 IMDA/datasets/
 IMDA/captured*
