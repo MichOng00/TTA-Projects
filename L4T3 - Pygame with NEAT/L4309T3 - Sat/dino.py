@@ -61,20 +61,20 @@ class Dinosaur:
     def draw(self, SCREEN):
         SCREEN.blit(self.image, (self.rect.x, self.rect.y))
 
-class Obstacle:
-    def __init__(self, image, number_of_cacti):
-        self.image = image
-        self.type = number_of_cacti
-        self.rect = self.image[self.type].get_rect()
-        self.rect.x = SCREEN_WIDTH # start at the right edge of window
+# class Obstacle:
+#     def __init__(self, image, number_of_cacti):
+#         self.image = image
+#         self.type = number_of_cacti
+#         self.rect = self.image[self.type].get_rect()
+#         self.rect.x = SCREEN_WIDTH # start at the right edge of window
 
-    def update(self):
-        self.rect.x -= game_speed
-        if self.rect.x < -self.rect.width: # delete obstacle after going off screen
-            obstacles.pop()
+#     def update(self):
+#         self.rect.x -= game_speed
+#         if self.rect.x < -self.rect.width: # delete obstacle after going off screen
+#             obstacles.pop()
 
-    def draw(self, SCREEN):
-        SCREEN.blit(self.image[self.type], self.rect)
+#     def draw(self, SCREEN):
+#         SCREEN.blit(self.image[self.type], self.rect)
 
 def main():
     clock = pygame.time.Clock()
