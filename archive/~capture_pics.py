@@ -9,11 +9,11 @@ SAVE_DIR = "AIMS_cubes" # changed folder for demo purposes
 os.makedirs(SAVE_DIR, exist_ok=True)
 
 got = ugot.UGOT()
-got.initialize("192.168.1.180")
+got.initialize("192.168.1.53")
 got.open_camera()
 got.transform_set_chassis_height(7)
 
-counter = 0    # with multiple runs, change this to one after the last captured image name to avoid overwriting images
+counter = 11    # with multiple runs, change this to one after the last captured image name to avoid overwriting images
 interval = 3   # seconds between captures
 
 print("Auto-capturing images. Press 'q' to stop.")
@@ -31,7 +31,7 @@ try:
 
             # Auto-save
             if time.time() - last_time >= interval:
-                filename = f"{SAVE_DIR}/pink_{counter:04d}.jpg"
+                filename = f"{SAVE_DIR}/white_{counter:04d}.jpg"
                 cv2.imwrite(filename, img)
                 print(f"Saved: {filename}")
                 counter += 1
