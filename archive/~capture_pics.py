@@ -5,7 +5,7 @@ import numpy as np
 import time
 import os
 
-SAVE_DIR = "AIMS_cubes" # changed folder for demo purposes
+SAVE_DIR = "example" # changed folder for demo purposes
 os.makedirs(SAVE_DIR, exist_ok=True)
 
 got = ugot.UGOT()
