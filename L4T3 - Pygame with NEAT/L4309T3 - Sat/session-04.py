@@ -1,10 +1,8 @@
-# pastebin.com/i0azLUH6
 import pygame
 import os
 import random
 import sys
 import neat
-import pickle
 
 pygame.init()
 
@@ -36,7 +34,6 @@ class Dinosaur:
         self.jump_vel = self.JUMP_VEL
         self.rect = pygame.Rect(self.X_POS, self.Y_POS, img.get_width(), img.get_height())
         self.step_index = 0
-        self.color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
 
     def update(self):
         if self.dino_run:
@@ -65,10 +62,6 @@ class Dinosaur:
 
     def draw(self, SCREEN):
         SCREEN.blit(self.image, (self.rect.x, self.rect.y))
-        pygame.draw.rect(SCREEN, self.color, self.rect, 2)
-        for obs in obstacles:
-            pygame.draw.line(SCREEN, self.color, (self.rect.x + 54, self.rect.y + 12),
-                             obs.rect.center, 2)
 
 class Obstacle:
     def __init__(self, image, number_of_cacti):
@@ -140,15 +133,6 @@ def main(genomes, config):
             x_pos_bg = 0
         x_pos_bg -=  game_speed
 
-    def statistics():
-        global dinosaurs, game_speed, ge
-        text_1 = FONT.render(f"Dinosaurs: {len(dinosaurs)}", True, (0,0,0))
-        text_2 = FONT.render(f"Game speed: {game_speed}", True, (0,0,0))
-        text_3 = FONT.render(f"Generation: {pop.generation + 1}", True, (0,0,0))
-        SCREEN.blit(text_1, (50, 50))
-        SCREEN.blit(text_2, (50, 80))
-        SCREEN.blit(text_3, (50, 110))
-
     run = True
     while run:
         for event in pygame.event.get():
@@ -192,7 +176,6 @@ def main(genomes, config):
             score()
         text = FONT.render(f"Points: {points}", True, (0, 255, 191))
         SCREEN.blit(text, (950, 50))
-        statistics()
         background()
         clock.tick(60)
         pygame.display.update()
@@ -209,5 +192,5 @@ def run(config_path):
     pop = neat.Population(config)
     pop.run(main, 30)
 
-# pastebin.com/AvQD8MTF
+# pastebin.com/ctwT8XPr
 run("config-dino.txt")
