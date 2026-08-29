@@ -2,7 +2,6 @@ import pygame
 import math
 import sys
 import neat
-import random
 
 SCREEN_WIDTH = 900
 SCREEN_HEIGHT = 735
@@ -20,7 +19,7 @@ pygame.init()
 font = pygame.font.Font(None, 36)
 
 class Car(pygame.sprite.Sprite):
-    def __init__(self, color):
+    def __init__(self):
         super().__init__()
         self.original_image = pygame.image.load("Assets/not_car/car.png")
         self.image = self.original_image
@@ -32,8 +31,6 @@ class Car(pygame.sprite.Sprite):
         self.direction = 0 # 0: straight, 1/-1: left/right
         self.gear = 1
         self.time_since_death = 0
-        self.alive = True
-        self.color = color
 
     def update(self):
         self.drive()
@@ -127,111 +124,53 @@ class Car(pygame.sprite.Sprite):
         lap_surface = font.render(lap_time_text, True, (255,255,255))
         SCREEN.blit(timer_surface, (SCREEN_WIDTH-210, 20))
         SCREEN.blit(lap_surface, (SCREEN_WIDTH-210, 40))
-
-    def get_radar_distances(self):
-        distances = []
-        for radar_angle in (-60, -30, 0, 30, 60):
-            length = 0
-            x = int(self.rect.center[0])
-            y = int(self.rect.center[1])
-            while (
-                0 <= x < SCREEN_WIDTH and
-                0 <= y < SCREEN_HEIGHT and
-                not SCREEN.get_at((x, y)) == GRASS_COLOR and
-                length < 200
-            ):
-                length += 1
-                x = int(self.rect.center[0] + math.cos(math.radians(self.angle + radar_angle)) * length)
-                y = int(self.rect.center[1] - math.sin(math.radians(self.angle + radar_angle)) * length)
-            distances.append(length / 200)
-        return distances
-
-    def apply_controls(self, steering):
-        self.drive_state = True
-        if steering > 0.2:
-            self.direction = 1
-        elif steering < -0.2:
-            self.direction = -1
-        else:
-            self.direction = 0
-
-    def distance_from_start(self):
-        dx = self.rect.center[0] - START_POS[0]
-        dy = self.rect.center[1] - START_POS[1]
-        return math.hypot(dx, dy)
         
-def main(genomes, config):
-    global cars, ge, nets
-    cars = []
-    ge = []
-    nets = []
-    clock = pygame.time.Clock()
 
-    for id, genome in genomes:
-        color = (random.randint(0,255), random.randint(0,255), random.randint(0,255))
-        car = Car(color)
-        cars.append(car)
-        ge.append(genome)
-        net = neat.nn.FeedForwardNetwork.create(genome, config)
-        nets.append(net)
-        genome.fitness = 0
+car = pygame.sprite.GroupSingle(Car())
 
+def main():
+    start_time = pygame.time.get_ticks()
+    shifted = False
     run = True
-    steps = 0
-    max_steps = 5000
-    fitness_threshold = 5000
-
-    while run and len(cars) > 0 and steps < max_steps:
-        steps += 1
+    while run:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
+                run = False
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_LSHIFT:
+                    car.sprite.gear += 1
+                    car.sprite.gear = min(car.sprite.gear, 5)
+                if event.key == pygame.K_LCTRL:
+                    car.sprite.gear -= 1
+                    car.sprite.gear = max(car.sprite.gear, 1)
 
         SCREEN.blit(TRACK, (0,0))
 
-        for i, car in enumerate(cars):
-            if car.alive:
-                ge[i].fitness += 1
-                if ge[i].fitness >= fitness_threshold:
-                    car.alive = False
+        user_input = pygame.key.get_pressed()
+        if sum(user_input) <= 1:
+            car.sprite.drive_state = False
+            car.sprite.direction = 0
+        if user_input[pygame.K_UP]:
+            car.sprite.drive_state = True
+        if user_input[pygame.K_RIGHT]:
+            car.sprite.direction = 1
+        if user_input[pygame.K_LEFT]:
+            car.sprite.direction = -1
 
-                inputs = car.get_radar_distances()
-                output = nets[i].activate(inputs)
-                steering = output[1]        # number from -1 to 1
-                car.apply_controls(steering)
-                car.update()
+        car.update()
+        car.sprite.check_collision()
+        car.draw(SCREEN)
+        car.sprite.draw_info(start_time)
 
-                SCREEN.blit(car.image, car.rect)
-                pygame.draw.circle(SCREEN, car.color, car.rect.center, 5)
-
-                if not car.alive:
-                    cars.pop(i)
-                    ge.pop(i)
-                    nets.pop(i)
-                    break
-
-        text = font.render(f"Cars alive: {len(cars)}", True, (0,0,0))
-        SCREEN.blit(text, (20,20))
-        if len(cars) > 0:
-            fit_text = font.render(f"Fitness: {ge[0].fitness}", True, (0,0,0))
-            SCREEN.blit(fit_text, (20,80))
+        gear_text = f"Gear: {car.sprite.gear}"
+        gear_surface = font.render(gear_text, True, (255,255,255))
+        SCREEN.blit(gear_surface, (20, 20))
 
         pygame.display.update()
-        clock.tick(60)
 
-def run_neat(config_path):
-    config = neat.config.Config(
-        neat.DefaultGenome, 
-        neat.DefaultReproduction,
-        neat.DefaultSpeciesSet,
-        neat.DefaultStagnation,
-        config_path
-    )
-    pop = neat.Population(config)
-    pop.add_reporter(neat.StdOutReporter(True))
-    stats = neat.StatisticsReporter()
-    pop.add_reporter(stats)
-    pop.run(main, 30)
+    pygame.quit()
+    sys.exit()
+main()
 
-run_neat("config_car.txt") # pastebin.com/5Zz5VPN2
+# pastebin.com/DuQ1DWTt

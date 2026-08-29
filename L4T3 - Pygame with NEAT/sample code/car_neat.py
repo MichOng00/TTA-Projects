@@ -299,3 +299,5 @@ if __name__ == "__main__":
     run_neat("config-car.txt")
 
 # pastebin.com/DuQ1DWTt
+# TODO: fastest lap for fitness
+# customise track
