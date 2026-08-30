@@ -36,4 +36,4 @@ IMDA/runs
 # folder-specific
 IMDA/SIT/*.csv
 **/runs
-/AIMS*
+*/AIMS*
