@@ -9,11 +9,20 @@ SCREEN_HEIGHT = 735
 
 SCREEN = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
-TRACK = pygame.image.load("Assets/not_car/track.png")
+TRACK = pygame.image.load("Assets/not_car/track_andy.png")
 TRACK = pygame.transform.scale(TRACK, (SCREEN_WIDTH, SCREEN_HEIGHT))
 START_POS = (350, 600)
 
 GRASS_COLOR = pygame.Color(2, 105, 31, 255)
+
+LEAVE_RADIUS = 150
+FINISH_RADIUS = 40
+MIN_LAP_STEPS = 100
+LAP_FITNESS_BASE = 1000
+DEATH_PENALTY = 20
+
+MIN_SPEED = 3
+MAX_SPEED = 15
 
 pygame.init()
 
@@ -34,6 +43,15 @@ class Car(pygame.sprite.Sprite):
         self.time_since_death = 0
         self.alive = True
         self.color = color
+        self.speed = MIN_SPEED
+        self.start_pos = START_POS
+        # lap tracking
+        self.distance_traveled = 0
+        self.spawn_step = 0
+        self.left_start = False
+        self.lap_complete = False
+        self.lap_time = None
+        self.laps_completed = 0
 
     def update(self):
         self.drive()
@@ -60,7 +78,10 @@ class Car(pygame.sprite.Sprite):
 
     def drive(self):
         if self.drive_state:
-            self.rect.center += self.vel_vector * (6 + self.gear)
+            # self.rect.center += self.vel_vector * (6 + self.gear)
+            movement = self.vel_vector * self.speed
+            self.rect.center += movement
+            self.distance_traveled += movement.length()
 
     def rotate(self):
         if self.direction == 1:
@@ -146,8 +167,10 @@ class Car(pygame.sprite.Sprite):
             distances.append(length / 200)
         return distances
 
-    def apply_controls(self, steering):
+    def apply_controls(self, throttle, steering):
         self.drive_state = True
+        throttle_norm = max(0, min(1, throttle))
+        self.speed = MIN_SPEED + throttle_norm * (MAX_SPEED - MIN_SPEED)
         if steering > 0.2:
             self.direction = 1
         elif steering < -0.2:
@@ -159,6 +182,25 @@ class Car(pygame.sprite.Sprite):
         dx = self.rect.center[0] - START_POS[0]
         dy = self.rect.center[1] - START_POS[1]
         return math.hypot(dx, dy)
+
+    def check_lap(self, current_step):
+        dist = self.distance_from_start()
+        # check for starting lap
+        if not self.left_start:
+            if dist > LEAVE_RADIUS:
+                self.left_start = True
+        # check for finishing lap
+        elif not self.lap_complete and dist < FINISH_RADIUS:
+            lap_time = current_step - self.spawn_step
+            if lap_time > MIN_LAP_STEPS:
+                self.lap_complete = True
+                self.lap_time = lap_time
+
+    def reset_lap(self, current_step):
+        self.laps_completed += 1
+        self.lap_complete = False
+        self.left_start = False
+        self.spawn_step = current_step
         
 def main(genomes, config):
     global cars, ge, nets
@@ -192,20 +234,34 @@ def main(genomes, config):
 
         for i, car in enumerate(cars):
             if car.alive:
-                ge[i].fitness += 1
-                if ge[i].fitness >= fitness_threshold:
-                    car.alive = False
+                # ge[i].fitness += 1
+                # if ge[i].fitness >= fitness_threshold:
+                #     car.alive = False
 
                 inputs = car.get_radar_distances()
                 output = nets[i].activate(inputs)
+                throttle = output[0]
                 steering = output[1]        # number from -1 to 1
-                car.apply_controls(steering)
+                car.apply_controls(throttle, steering)
                 car.update()
+                car.check_lap(steps)
+
+                progress_fitness = car.distance_traveled / 100
+                if progress_fitness > ge[i].fitness:
+                    ge[i].fitness = progress_fitness
+
+                finished_lap_this_frame = car.lap_complete
+                if finished_lap_this_frame:
+                    lap_fitness = LAP_FITNESS_BASE - car.lap_time
+                    ge[i].fitness += lap_fitness
+                    car.reset_lap(steps)
 
                 SCREEN.blit(car.image, car.rect)
                 pygame.draw.circle(SCREEN, car.color, car.rect.center, 5)
 
                 if not car.alive:
+                    if not finished_lap_this_frame:
+                        ge[i].fitness = max(0, ge[i].fitness - DEATH_PENALTY)
                     cars.pop(i)
                     ge.pop(i)
                     nets.pop(i)
@@ -214,7 +270,7 @@ def main(genomes, config):
         text = font.render(f"Cars alive: {len(cars)}", True, (0,0,0))
         SCREEN.blit(text, (20,20))
         if len(cars) > 0:
-            fit_text = font.render(f"Fitness: {ge[0].fitness}", True, (0,0,0))
+            fit_text = font.render(f"Fitness: {ge[0].fitness:.2f}", True, (0,0,0))
             SCREEN.blit(fit_text, (20,80))
 
         pygame.display.update()
@@ -232,6 +288,6 @@ def run_neat(config_path):
     pop.add_reporter(neat.StdOutReporter(True))
     stats = neat.StatisticsReporter()
     pop.add_reporter(stats)
-    pop.run(main, 30)
+    pop.run(main, 80)
 
-run_neat("config_car.txt") # pastebin.com/5Zz5VPN2
+run_neat("config_car.txt") # tinyurl.com/56jks6m6
