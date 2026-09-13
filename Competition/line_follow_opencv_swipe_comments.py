@@ -9,7 +9,7 @@ from ultralytics import YOLO
 # Config
 # ---------------------------------------------------------------------------
 
-ROBOT_IP = "192.168.1.185"
+ROBOT_IP = "192.168.1.180"
 
 SHOW_MASK = False
 SHOW_DETECT = True
@@ -18,7 +18,7 @@ DIR_LEFT = 2
 DIR_RIGHT = 3
 
 # --- Object detection (unripe cube) config ---
-YOLO_WEIGHTS_PATH = "AIMS_final_null.pt"
+YOLO_WEIGHTS_PATH = "./AIMS_final_null.pt"
 
 UNRIPE_LABEL = "unripe"
 # ^ The exact label name the model uses for an "unripe" cube. Only needs

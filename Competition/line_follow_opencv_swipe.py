@@ -9,7 +9,7 @@ from ultralytics import YOLO
 # Config
 # ---------------------------------------------------------------------------
 
-ROBOT_IP = "192.168.1.183" # 183: Oliver/Jolie, 180: Elijah/Eric/Joshua, 209:Xiu Yuan/Ze Sen/Mi Yue
+ROBOT_IP = "192.168.1.180" # 183: Oliver/Jolie, 180: Elijah/Eric/Joshua, 209:Xiu Yuan/Ze Sen/Mi Yue
 SHOW_DEBUG = False
 
 DIR_LEFT = 2
