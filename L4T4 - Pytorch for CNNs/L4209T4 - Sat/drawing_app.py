@@ -1,6 +1,9 @@
 import tkinter as tk
 from tkinter import ttk
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageOps
+import torch
+import numpy as np
+from digit_train import DigitCNN
 
 class DrawingApp():
     IMAGE_SIZE = 500
@@ -12,7 +15,7 @@ class DrawingApp():
         self.mainframe.grid(row=0, column=0, sticky="nsew")
 
         # Create canvas
-        self.canvas = tk.Canvas(self.mainframe, width=self.IMAGE_SIZE, height=self.IMAGE_SIZE, bg="forest green", relief="solid", bd=2)
+        self.canvas = tk.Canvas(self.mainframe, width=self.IMAGE_SIZE, height=self.IMAGE_SIZE, bg="white", relief="solid", bd=2)
         self.canvas.grid(row=0, column=0, columnspan=2)
 
         # Bind canvas to left mouse button
@@ -51,6 +54,11 @@ class DrawingApp():
         self.image = Image.new("L", (self.IMAGE_SIZE, self.IMAGE_SIZE), color=255)
         self.draw = ImageDraw.Draw(self.image)
 
+        # model
+        self.model = DigitCNN()
+        self.model.load_state_dict(torch.load("digit_model.pth"))
+        self.model.eval()
+
     def change_color(self, event):
         self.color = self.color_entry.get()
 
@@ -61,6 +69,7 @@ class DrawingApp():
         x, y = event.x, event.y
         r = self.pen_width # radius of the oval
         self.canvas.create_oval(x-r, y-r, x+r, y+r, fill=self.color, outline=self.color)
+        self.draw.ellipse([x-r, y-r, x+r, y+r], fill=0) # create ellipse on PIL image
 
     def clear_canvas(self):
         self.canvas.delete("all")
@@ -69,7 +78,14 @@ class DrawingApp():
         self.status_label.config(text="Draw a digit") # remove previous prediction
 
     def predict(self):
-        pass
+        resized = self.image.resize((28, 28), Image.Resampling.LANCZOS)
+        inverted = ImageOps.invert(resized)
+        tensor = torch.tensor(np.array(inverted) / 255, dtype=torch.float32).unsqueeze(0).unsqueeze(0)
+
+        with torch.no_grad():
+            pred = self.model(tensor)
+            digit = pred.argmax(dim=1).item() # predicted label (0-9)
+            self.status_label.config(text=f"Prediction: {digit}")
 
 
 if __name__ == "__main__":
@@ -77,4 +93,4 @@ if __name__ == "__main__":
     app = DrawingApp(root)
     root.mainloop()
 
-# pastebin.com/KGAHMNZf
+# github.com/MichOng00/TTA-Projects

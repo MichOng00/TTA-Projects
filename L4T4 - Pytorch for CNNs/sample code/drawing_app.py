@@ -2,7 +2,7 @@ import tkinter as tk
 from PIL import Image, ImageDraw, ImageOps
 import torch
 import numpy as np
-from session_3 import DigitCNN
+from digit_train import DigitCNN
 
 class DrawingApp:
     def __init__(self, root):
