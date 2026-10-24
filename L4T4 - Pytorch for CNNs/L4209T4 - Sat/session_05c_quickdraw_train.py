@@ -1,6 +1,7 @@
 # Just to download data first.
 # Choose 10 classes to 1) fit the previous neural network structure (also 10 classes)
 # and 2) limit space usage on computer / network training time.
+# Make sure the class names are lowercase except proper names, and replace spaces with underscores.
 # Also limit images per class for space and time (there are >100k images for each class!)
 from quickdraw_utils import QuickDrawDataset
 
