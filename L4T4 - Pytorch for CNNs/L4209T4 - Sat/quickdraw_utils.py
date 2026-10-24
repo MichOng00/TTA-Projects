@@ -75,7 +75,7 @@ class QuickDrawDataset(torch.utils.data.Dataset):
         return {"pixel_values" : x, "labels" : y}
 
     def split(self, pct=0.1): # split data into training and validation sets
-        indices = torch.randperm(len(self).tolist()) # randomly shuffle indices
+        indices = torch.randperm(len(self)).tolist() # randomly shuffle indices
         n_val = math.floor(len(indices) * pct)       # which number should I stop at for training dataset
         train_ds = torch.utils.data.Subset(self, indices[:-n_val])
         val_ds = torch.utils.data.Subset(self, indices[-n_val:])

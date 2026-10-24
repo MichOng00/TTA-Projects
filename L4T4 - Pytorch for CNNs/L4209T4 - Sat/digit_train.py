@@ -12,6 +12,7 @@ class DigitCNN(nn.Module):
             nn.Conv2d(1, 16, 3, padding=1), # 1x28x28 -> 16x28x28
             nn.ReLU(),
             nn.MaxPool2d(2),                # 16x28x28 -> 16x14x14
+            
             nn.Conv2d(16, 32, 3, padding=1),# 16x14x14 -> 32x14x14
             nn.ReLU(),
             nn.MaxPool2d(2),                # 32x14x14 -> 32x7x7
