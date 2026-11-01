@@ -13,15 +13,15 @@ class QuickDrawCNN9L(nn.Module):
             # the convolution layers have 64, 128, and 256 output channels.
 
             # nn.Conv2d(input_channels, output_channels, kernel_size, padding)
-            nn.Conv2d(1, 64, 3, padding="same"), # 1x28x28 -> 64x28x28
+            nn.Conv2d(1, 64, 3, padding=1), # 1x28x28 -> 64x28x28
             nn.ReLU(),
             nn.MaxPool2d(2),                     # 64x28x28 -> 64x14x14
             
-            nn.Conv2d(64, 128, 3, padding="same"), # 64x14x14 -> 128x14x14
+            nn.Conv2d(64, 128, 3, padding=1), # 64x14x14 -> 128x14x14
             nn.ReLU(),
             nn.MaxPool2d(2),                     # 128x14x14 -> 128x7x7
 
-            nn.Conv2d(128, 256, 3, padding="same"), # 128x7x7 -> 256x7x7
+            nn.Conv2d(128, 256, 3, padding=1), # 128x7x7 -> 256x7x7
             nn.ReLU(),
             nn.MaxPool2d(2),                     # 256x7x7 -> 256x3x3 - cut off decimal point
 

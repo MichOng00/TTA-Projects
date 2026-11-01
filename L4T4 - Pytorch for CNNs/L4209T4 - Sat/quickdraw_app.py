@@ -9,7 +9,7 @@ import random
 
 class DrawingApp():
     IMAGE_SIZE = 500
-    def __init__(self, root):
+    def __init__(self, root, class_names):
         root.title("Draw a digit")
 
         # Set up frame
@@ -29,6 +29,9 @@ class DrawingApp():
 
         self.button_predict = ttk.Button(self.mainframe, text="Predict", command=self.predict)
         self.button_predict.grid(row=1, column=0, pady=10)
+
+        self.button_start = ttk.Button(self.mainframe, text="Start", command=self.start_round)
+        self.button_start.grid(row=1, column=2, pady=10)
 
         self.status_label = ttk.Label(self.mainframe, text="Draw a digit", anchor="w")
         self.status_label.grid(row=2, column=0, columnspan=2, sticky="w")
@@ -56,10 +59,20 @@ class DrawingApp():
         self.image = Image.new("L", (self.IMAGE_SIZE, self.IMAGE_SIZE), color=255)
         self.draw = ImageDraw.Draw(self.image)
 
+        self.class_names = class_names
+
         # model
-        self.model = DigitCNN()
-        self.model.load_state_dict(torch.load("digit_model.pth"))
+        self.model = QuickDrawCNN9L(num_classes = len(self.class_names))
+        self.model.load_state_dict(torch.load(Path(root_dir) / "quickdraw_9layer.pth"))
+        # self.model.load_state_dict(torch.load("quickdraw_9layer.pth"))
         self.model.eval()
+        # tinyurl.com/43y3m746
+
+        root.after(200, self.predict)
+
+        self.current_target = None
+        self.time_left = 0
+        self.timer_running = False
 
     def change_color(self, event):
         self.color = self.color_entry.get()
@@ -79,15 +92,52 @@ class DrawingApp():
         self.draw = ImageDraw.Draw(self.image)
         self.status_label.config(text="Draw a digit") # remove previous prediction
 
+    def start_round(self):
+        self.clear_canvas()
+        self.current_target = random.choice(self.class_names)
+        self.status_label.config(text = f"Draw: {self.current_target}")
+        self.time_left = 20
+        self.timer_running = True
+        self.update_timer()
+        root.after(200, self.predict)
+
+    def update_timer(self):
+        if self.time_left > 0 and self.timer_running:
+            self.label_timer.config(text=f"Time left: {self.time_left}s")
+            self.time_left -= 1
+            root.after(1000, self.update_timer) # call itself again after 1 second
+        elif self.timer_running:
+            self.label_timer.config(text="Time's up!")
+            self.timer_running = False
+
     def predict(self):
+        if not self.timer_running:
+            return
         resized = self.image.resize((28, 28), Image.Resampling.LANCZOS)
         inverted = ImageOps.invert(resized)
         tensor = torch.tensor(np.array(inverted) / 255, dtype=torch.float32).unsqueeze(0).unsqueeze(0)
 
         with torch.no_grad():
             pred = self.model(tensor)
-            digit = pred.argmax(dim=1).item() # predicted label (0-9)
-            self.status_label.config(text=f"Prediction: {digit}")
+            # idx = pred.argmax(dim=1).item() # index (0-9)
+            # class_name = self.class_names[idx]
+            probs = torch.softmax(pred, dim=1)
+            top2 = torch.topk(probs, 2)
+            idx1 = top2.indices[0][0].item()
+            idx2 = top2.indices[0][1].item()
+            conf1 = top2.values[0][0].item()
+            conf2 = top2.values[0][1].item()
+            class1 = self.class_names[idx1]
+            class2 = self.class_names[idx2]
+
+            self.status_label.config(text=f"Target: {self.current_target}\nPrediction: {class1} {conf1:.2%}\n2nd guess: {class2} {conf2:.2%}")
+
+            if self.current_target == class1 and conf1 >= 0.4:
+                self.label_timer.config(text="I recognised it!")
+                self.timer_running = False
+                return
+
+        root.after(200, self.predict)
 
 
 if __name__ == "__main__":
@@ -97,3 +147,5 @@ if __name__ == "__main__":
         class_names = [line.strip() for line in f if line.strip()]
     app = DrawingApp(root, class_names)
     root.mainloop()
+
+# tinyurl.com/msxkswd
