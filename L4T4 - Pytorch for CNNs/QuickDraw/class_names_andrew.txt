@@ -1,0 +1,10 @@
+airplane
+banana
+bicycle
+cactus
+camera
+cat
+coffee_cup
+guitar
+lighthouse
+umbrella

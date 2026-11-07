@@ -8,7 +8,7 @@ from quickdraw_train import QuickDrawCNN9L
 import random
 
 class DrawingApp():
-    IMAGE_SIZE = 500
+    IMAGE_SIZE = 300 # try just changing size - original is 256x256. And basically need more data, 5k is good
     def __init__(self, root, class_names):
         root.title("Draw a digit")
 
@@ -35,6 +35,9 @@ class DrawingApp():
 
         self.status_label = ttk.Label(self.mainframe, text="Draw a digit", anchor="w")
         self.status_label.grid(row=2, column=0, columnspan=2, sticky="w")
+
+        self.timer_label = ttk.Label(self.mainframe, text="")
+        self.timer_label.grid(row=3, column=0, columnspan=4)
 
         self.color = "black"
 
@@ -63,7 +66,7 @@ class DrawingApp():
 
         # model
         self.model = QuickDrawCNN9L(num_classes = len(self.class_names))
-        self.model.load_state_dict(torch.load(Path(root_dir) / "quickdraw_9layer.pth"))
+        self.model.load_state_dict(torch.load(Path(root_dir) / "quickdraw_andrew.pth"))
         # self.model.load_state_dict(torch.load("quickdraw_9layer.pth"))
         self.model.eval()
         # tinyurl.com/43y3m746
@@ -109,6 +112,7 @@ class DrawingApp():
         elif self.timer_running:
             self.label_timer.config(text="Time's up!")
             self.timer_running = False
+            self.predict()
 
     def predict(self):
         if not self.timer_running:
@@ -133,7 +137,7 @@ class DrawingApp():
             self.status_label.config(text=f"Target: {self.current_target}\nPrediction: {class1} {conf1:.2%}\n2nd guess: {class2} {conf2:.2%}")
 
             if self.current_target == class1 and conf1 >= 0.4:
-                self.label_timer.config(text="I recognised it!")
+                self.timer_label.config(text="I recognised it!")
                 self.timer_running = False
                 return
 
@@ -143,7 +147,7 @@ class DrawingApp():
 if __name__ == "__main__":
     root = tk.Tk()
     root_dir = "../QuickDraw"
-    with open(Path(root_dir) / "class_names.txt", "r") as f:
+    with open(Path(root_dir) / "class_names_andrew.txt", "r") as f:
         class_names = [line.strip() for line in f if line.strip()]
     app = DrawingApp(root, class_names)
     root.mainloop()

@@ -3,7 +3,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from pathlib import Path
-from quickdraw_utils import QuickDrawDataSet
+from quickdraw_utils import QuickDrawDataset
 
 class QuickDrawCNN9L(nn.Module):
     def __init__(self,num_classes):
@@ -29,11 +29,11 @@ class QuickDrawCNN9L(nn.Module):
         return x
 
 if __name__=="__main__":
-    root="QuickDraw"
+    root="../QuickDraw"
     class_limit=10
-    max_items_per_class=2000
+    max_items_per_class=5000
 
-    dataset=QuickDrawDataSet(root,max_items_per_class,class_limit,
+    dataset=QuickDrawDataset(root,max_items_per_class,class_limit,
                              class_names=["airplane","banana","bicycle","cactus","camera","cat","coffee_cup","guitar","lighthouse","umbrella"])
     
     train_ds, val_ds=dataset.split(pct=0.1)
@@ -43,7 +43,7 @@ if __name__=="__main__":
 
     class_names=dataset.classes
     Path(root).mkdir(exist_ok=True)
-    with open(Path(root)/"class_names.txt","w") as f:
+    with open(Path(root)/"class_names_andrew.txt","w") as f:
         f.write("\n".join(class_names))
 
     model=QuickDrawCNN9L(num_classes=len(class_names))
@@ -62,4 +62,4 @@ if __name__=="__main__":
             optimiser.step()
             loop.set_postfix(loss=loss.item())
         print(f"Epoch{epoch+1}done.")
-    torch.save(model.state_dict(),Path(root)/"quickdraw_9layer.pth")
+    torch.save(model.state_dict(),Path(root)/"quickdraw_andrew.pth")
