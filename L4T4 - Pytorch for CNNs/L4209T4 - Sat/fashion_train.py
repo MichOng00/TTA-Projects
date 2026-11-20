@@ -68,9 +68,9 @@ def evaluate(model, loader, criterion, class_names):
 if __name__ == "__main__": # make sure the code only runs if you run the file directly (not imports)
     # load data
     transform = transforms.ToTensor()
-    train_set = datasets.FashionMNIST(root=".", train=True, download=True, transform=transform)
+    train_set = datasets.FashionMNIST(root="..", train=True, download=True, transform=transform)
     train_loader = DataLoader(train_set, batch_size=64, shuffle=True)
-    test_set = datasets.FashionMNIST(root=".", train=False, download=True, transform=transform)
+    test_set = datasets.FashionMNIST(root="..", train=False, download=True, transform=transform)
     test_loader = DataLoader(test_set, batch_size=64, shuffle=False)
 
     # create model, loss function, optimiser
@@ -116,3 +116,25 @@ if __name__ == "__main__": # make sure the code only runs if you run the file di
             print(f"      {cls:12s}: {acc:.4f}")
 
     torch.save(model.state_dict(), "fashion_model.pth")
+
+    # plot results
+    plt.figure(figsize=(10, 5))
+
+    plt.subplot(1, 2, 1)
+    plt.plot(train_losses, label = "Train loss")
+    plt.plot(test_losses, label = "Test loss")
+    plt.xlabel("Epoch")
+    plt.ylabel("Loss")
+    plt.legend()
+    plt.title("Loss over epochs")
+
+    plt.subplot(1, 2, 2)
+    plt.plot(test_accuracies, label = "Test accuracy")
+    plt.xlabel("Epoch")
+    plt.ylabel("Accuracy")
+    plt.legend()
+    plt.title("Accuracy over epochs")
+
+    plt.tight_layout()
+    plt.savefig("fashion_train.png")
+    plt.show()

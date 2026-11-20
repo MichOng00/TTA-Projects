@@ -1,3 +1,6 @@
+# Can mostly copy from digit_train.py, since FashionMNIST is designed as drop-in replacement.
+# Class names here: https://github.com/zalandoresearch/fashion-mnist
+# Added statistics (install matplotlib if needed)
 import torch
 import torch.nn as nn
 from torchvision import datasets, transforms
