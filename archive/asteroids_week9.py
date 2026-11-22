@@ -211,7 +211,7 @@ class Player:
         self.angle = -90.0
 
 class Game:
-    def __init__(self, width=800, height=450, caption="Session 2 - Asteroids Ship Movement"):
+    def __init__(self, width=800, height=450, caption="Asteroids"):
         pygame.init()
 
         self.width = width

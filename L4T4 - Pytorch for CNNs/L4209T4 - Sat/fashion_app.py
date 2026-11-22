@@ -37,6 +37,10 @@ class FashionApp(ttk.Frame):
 
         self.lbl_results = ttk.Label(self.left_frame, text="Top predictions:")
         self.results = ttk.Treeview(self.left_frame, columns=("Class", "Conf"), show="headings", height=4)
+        self.results.heading("Class", text="Class")
+        self.results.heading("Conf", text="Confidence")
+        self.results.column("Class", width=100)
+        self.results.column("Conf", width=80, anchor="e")
 
         # Right image display area
         self.canvas = tk.Canvas(self, bg="lightgray")
@@ -71,10 +75,13 @@ class FashionApp(ttk.Frame):
         path = filedialog.askopenfilename(title="select an image")
         if not path:
             return
-        self.original_image = Image.open(path).convert("RGB")
-        self.show_image()
-        self.show_preview()
-        self.btn_predict.config(state=tk.NORMAL) # enable clicking predict button
+        try:
+            self.original_image = Image.open(path).convert("RGB")
+            self.show_image()
+            self.show_preview()
+            self.btn_predict.config(state=tk.NORMAL) # enable clicking predict button
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to open image: \n{e}")
 
     def show_image(self):
         self.canvas.delete("all")
@@ -91,13 +98,34 @@ class FashionApp(ttk.Frame):
 
 
     def get_processed_image(self):
-        pass
+        if not self.original_image: # have not loaded any image yet
+            return None
+        img = ImageOps.grayscale(self.original_image).resize((28, 28))
+        return ImageOps.invert(img)
 
     def show_preview(self):
-        pass
+        img = self.get_processed_image()
+        self.preview.delete("all")
+        if img:
+            small = img.resize((84, 84))
+            self.preview_tk = ImageTk.PhotoImage(small)
+            self.preview.create_image(42, 42, image = self.preview_tk)
 
     def predict_image(self):
-        pass
+        img = self.get_processed_image()
+        if not img:
+            return
+
+        tensor = transforms.ToTensor()(img).unsqueeze(0)
+        with torch.no_grad():
+            probs = torch.softmax(self.model(tensor), dim=1)[0]
+            top_p, top_c = torch.topk(probs, 3)
+
+        for i in self.results.get_children():
+            self.results.delete(i)
+
+        for p, c in zip(top_p, top_c):
+            self.results.insert("", "end", values=(class_names[c.item()], f"{p.item() * 100:.1f}%"))
 
 if __name__ == "__main__":
     root = tk.Tk()
