@@ -10,6 +10,8 @@ dependencies = [
     "lgpio>=0.2.2.0",
     "opencv-python>=5.0.0.93",
     "requests>=2.34.2",
+    "ugot>=0.2.13",
+    "ultralytics>=8.4.218",
 ]
 
 [project.scripts]
