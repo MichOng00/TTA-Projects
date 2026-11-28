@@ -6,7 +6,7 @@ import os
 
 app = Flask(__name__)
 cap = cv2.VideoCapture(0)
-cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'MJPG'))
+cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'MJPG')) # for ugot camera
 button = Button(18)
 
 # Folder to save pictures
